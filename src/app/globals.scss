@@ -1,0 +1,49 @@
+:root {
+  --color-bg: #f6f3ef;
+  --color-surface: #ffffff;
+  --color-text: #201a17;
+  --color-muted: #746b63;
+  --color-border: #ded6cd;
+  --color-accent: #2f6f4e;
+  --color-accent-strong: #1f5339;
+  --container-width: 1180px;
+  --header-height: 76px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: Inter, Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.app-shell__content {
+  flex: 1;
+}
