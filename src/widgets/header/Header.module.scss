@@ -3,7 +3,7 @@
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--color-border);
-  background: rgba(246, 243, 239, 0.94);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
 }
 
@@ -13,20 +13,37 @@
   min-height: var(--header-height);
   margin: 0 auto;
   align-items: center;
-  gap: 24px;
-  grid-template-columns: auto 1fr minmax(220px, 320px);
+  gap: 22px;
+  grid-template-columns: auto 1fr minmax(220px, 310px) auto;
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: var(--color-text);
   font-size: 20px;
   font-weight: 700;
 }
 
+.logoMark {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--color-brand);
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 800;
+}
+
 .nav {
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: center;
+  gap: 22px;
 }
 
 .navLink {
@@ -38,11 +55,47 @@
 }
 
 .navLink:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-brand);
 }
 
 .search {
+  position: relative;
   min-width: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  z-index: 1;
+  color: var(--color-muted);
+  transform: translateY(-50%);
+}
+
+.search input {
+  padding-left: 42px;
+}
+
+.cartButton {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-brand);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.cartButton:hover {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: #ffffff;
 }
 
 @media (max-width: 760px) {
@@ -52,10 +105,30 @@
   }
 
   .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
     justify-content: flex-end;
   }
 
   .search {
     grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .cartButton {
+    justify-self: flex-end;
+  }
+}
+
+@media (max-width: 520px) {
+  .nav {
+    justify-content: flex-start;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .navLink {
+    flex: 0 0 auto;
   }
 }
