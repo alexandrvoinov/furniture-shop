@@ -99,14 +99,31 @@
   cursor: pointer;
 }
 
+.counter button:hover {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
 .counter span {
   text-align: center;
   font-weight: 800;
 }
 
-.item strong {
+.linePrice {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.linePrice strong {
   white-space: nowrap;
   font-size: 18px;
+}
+
+.linePrice span {
+  color: var(--color-muted);
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .trashButton {
@@ -119,6 +136,42 @@
 .trashButton:hover {
   background: var(--color-brand-soft);
   color: var(--color-brand);
+}
+
+.emptyState {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+  padding: 28px;
+}
+
+.emptyState h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 26px;
+}
+
+.emptyState p {
+  max-width: 520px;
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.emptyState a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--color-brand);
+  color: #ffffff;
+  font-weight: 800;
+  padding: 0 16px;
 }
 
 .summary {
@@ -188,6 +241,11 @@
   font-weight: 800;
 }
 
+.checkoutButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .note {
   display: flex;
   align-items: flex-start;
@@ -226,7 +284,7 @@
   }
 
   .counter,
-  .item strong {
+  .linePrice {
     grid-column: 2;
   }
 
@@ -242,9 +300,13 @@
   }
 
   .counter,
-  .item strong,
+  .linePrice,
   .trashButton {
     grid-column: 1 / -1;
+  }
+
+  .linePrice {
+    justify-items: start;
   }
 
   .trashButton {

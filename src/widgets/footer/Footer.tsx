@@ -7,6 +7,7 @@ import styles from './Footer.module.scss';
 const footerLinks = [
   { href: routes.catalog, label: 'Каталог' },
   { href: `${routes.home}#process`, label: 'Процесс' },
+  { href: routes.cabinet, label: 'Кабинет' },
   { href: routes.cart, label: 'Корзина' },
 ];
 

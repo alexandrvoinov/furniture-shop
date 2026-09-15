@@ -1,8 +1,32 @@
+import Link from 'next/link';
+
 import { ProductCard, productCategories, products } from '@/entities/product';
+import { routes } from '@/shared/lib/routes';
 
 import styles from './CatalogPage.module.scss';
 
-export default function CatalogPage() {
+type CatalogPageProps = {
+  searchParams?: Promise<{
+    category?: string | string[];
+  }>;
+};
+
+const getSearchParamValue = (value?: string | string[]) => {
+  return Array.isArray(value) ? value[0] : value;
+};
+
+const getFilterClassName = (isActive: boolean) => {
+  return isActive ? `${styles.filterButton} ${styles.filterButtonActive}` : styles.filterButton;
+};
+
+export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+  const params = await searchParams;
+  const selectedCategoryId = getSearchParamValue(params?.category);
+  const selectedCategory = productCategories.find((category) => category.id === selectedCategoryId);
+  const filteredProducts = selectedCategory
+    ? products.filter((product) => product.category === selectedCategory.title)
+    : products;
+
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
@@ -19,18 +43,27 @@ export default function CatalogPage() {
       <section className={styles.catalog}>
         <div className="container">
           <div className={styles.filterBar} aria-label="Фильтры каталога">
-            <button className={styles.filterButton} type="button">
+            <Link
+              aria-current={!selectedCategory ? 'page' : undefined}
+              className={getFilterClassName(!selectedCategory)}
+              href={routes.catalog}
+            >
               Все
-            </button>
+            </Link>
             {productCategories.map((category) => (
-              <button className={styles.filterButton} type="button" key={category.id}>
+              <Link
+                aria-current={selectedCategory?.id === category.id ? 'page' : undefined}
+                className={getFilterClassName(selectedCategory?.id === category.id)}
+                href={category.href}
+                key={category.id}
+              >
                 {category.title}
-              </button>
+              </Link>
             ))}
           </div>
 
           <div className={styles.grid}>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

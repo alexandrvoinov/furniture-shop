@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { ToastViewport } from '@/shared/ui/toast';
 import { Footer } from '@/widgets/footer/Footer';
 import { Header } from '@/widgets/header/Header';
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <div className="app-shell__content">{children}</div>
           <Footer />
         </div>
+        <ToastViewport />
       </body>
     </html>
   );

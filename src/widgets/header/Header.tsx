@@ -10,6 +10,7 @@ const navItems = [
   { href: routes.home, label: 'Главная' },
   { href: routes.catalog, label: 'Каталог' },
   { href: `${routes.home}#process`, label: 'Процесс' },
+  { href: routes.cabinet, label: 'Кабинет' },
 ];
 
 export function Header() {

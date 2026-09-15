@@ -44,6 +44,9 @@
 }
 
 .filterButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 42px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -53,9 +56,10 @@
   font-size: 15px;
   font-weight: 700;
   padding: 0 16px;
+  text-decoration: none;
 }
 
-.filterButton:first-child {
+.filterButtonActive {
   border-color: var(--color-brand);
   background: var(--color-brand);
   color: #ffffff;

@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { AddToCartButton } from '@/entities/cart/ui/AddToCartButton';
 import { formatPrice } from '@/shared/lib/formatters';
 import { productRoute } from '@/shared/lib/routes';
 
@@ -48,13 +49,21 @@ export function ProductCard({ product }: ProductCardProps) {
               <span className={styles.oldPrice}>{formatPrice(product.oldPrice)}</span>
             ) : null}
           </div>
-          <Link
-            className={styles.more}
-            href={productRoute(product.slug)}
-            aria-label={`Открыть ${product.name}`}
-          >
-            <ArrowRight size={18} aria-hidden="true" />
-          </Link>
+          <div className={styles.cardActions}>
+            <AddToCartButton
+              className={styles.cartButton}
+              label="В корзину"
+              productId={product.id}
+              productName={product.name}
+            />
+            <Link
+              className={styles.more}
+              href={productRoute(product.slug)}
+              aria-label={`Открыть ${product.name}`}
+            >
+              <ArrowRight size={18} aria-hidden="true" />
+            </Link>
+          </div>
         </div>
       </div>
     </article>

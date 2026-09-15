@@ -2,6 +2,7 @@ import { BadgeCheck, Clock, Ruler, ShieldCheck, Truck } from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+import { AddToCartButton } from '@/entities/cart/ui/AddToCartButton';
 import { getProductBySlug, products } from '@/entities/product';
 import { formatPrice } from '@/shared/lib/formatters';
 
@@ -49,9 +50,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           <div className={styles.actions}>
-            <button className={styles.primaryButton} type="button">
-              Добавить в корзину
-            </button>
+            <AddToCartButton
+              className={styles.primaryButton}
+              productId={product.id}
+              productName={product.name}
+            />
             <button className={styles.secondaryButton} type="button">
               Рассчитать проект
             </button>

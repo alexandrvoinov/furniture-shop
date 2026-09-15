@@ -24,6 +24,15 @@ export async function apiRequest<TResponse>(
   endpoint: string,
   options: ApiRequestOptions = {},
 ): Promise<TResponse> {
+  const { data } = await apiRequestWithMeta<TResponse>(endpoint, options);
+
+  return data;
+}
+
+export async function apiRequestWithMeta<TResponse>(
+  endpoint: string,
+  options: ApiRequestOptions = {},
+): Promise<{ data: TResponse; headers: Headers; status: number }> {
   const { body, headers, query, ...fetchOptions } = options;
   const requestHeaders = new Headers(headers);
   const url = buildApiUrl(endpoint, query);
@@ -45,10 +54,18 @@ export async function apiRequest<TResponse>(
   }
 
   if (response.status === 204) {
-    return undefined as TResponse;
+    return {
+      data: undefined as TResponse,
+      headers: response.headers,
+      status: response.status,
+    };
   }
 
-  return (await parseResponseBody(response)) as TResponse;
+  return {
+    data: (await parseResponseBody(response)) as TResponse,
+    headers: response.headers,
+    status: response.status,
+  };
 }
 
 function buildApiUrl(endpoint: string, query?: QueryParams) {

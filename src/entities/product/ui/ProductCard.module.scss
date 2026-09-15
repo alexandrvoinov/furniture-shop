@@ -72,6 +72,13 @@
   gap: 16px;
 }
 
+.cardActions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
 .price {
   display: block;
   color: var(--color-text);
@@ -87,28 +94,59 @@
   text-decoration: line-through;
 }
 
+.cartButton,
 .more {
   display: inline-flex;
-  width: 42px;
   height: 42px;
-  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: var(--color-brand);
+  border: 0;
   color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.cartButton {
+  gap: 8px;
+  border-radius: 8px;
+  background: var(--color-brand);
+  padding: 0 14px;
+  white-space: nowrap;
   transition:
     background 160ms ease,
     transform 160ms ease;
 }
 
+.more {
+  width: 42px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--color-text);
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.cartButton:hover,
 .more:hover {
   background: var(--color-brand-hover);
+}
+
+.cartButton:hover {
+  transform: translateY(-1px);
+}
+
+.more:hover {
   transform: translateX(2px);
 }
 
 @media (max-width: 760px) {
   .description {
     min-height: auto;
+  }
+
+  .footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
