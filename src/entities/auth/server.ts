@@ -1,53 +1,48 @@
 import { cookies } from 'next/headers';
 import type { NextResponse } from 'next/server';
 
+import { API_BASE_URL } from '@/shared/api/config';
 import {
   AUTH_COOKIE_MAX_AGE,
   AUTH_COOKIE_NAME,
   AUTH_DEFAULT_REDIRECT,
   AUTH_LOGIN_ROUTE,
+  BACKEND_AUTH_COOKIE_NAME,
   getDefaultRouteByRole,
 } from '@/shared/lib/auth';
 
-import type { AuthRole, AuthSession, LoginCredentials } from './types';
+import type { AuthRole, AuthSession, BackendAuthUser } from './types';
 
-const DEFAULT_DEMO_EMAIL = 'admin@mebel.kz';
-const DEFAULT_DEMO_PASSWORD = 'admin12345';
-const DEFAULT_CUSTOMER_DEMO_EMAIL = 'client@mebel.kz';
-const DEFAULT_CUSTOMER_DEMO_PASSWORD = 'client12345';
-
-type DemoAccount = {
+type CredentialsHint = {
   email: string;
-  id: string;
-  name: string;
-  password: string;
+  label: string;
+  password?: string;
   role: AuthRole;
 };
 
 export async function getAuthSession(): Promise<AuthSession | null> {
   const cookieStore = await cookies();
-  const value = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const backendSession = cookieStore.get(BACKEND_AUTH_COOKIE_NAME)?.value;
 
-  return decodeAuthSession(value);
-}
-
-export function authenticateDemoUser(credentials: LoginCredentials): AuthSession | null {
-  const email = credentials.email.trim().toLowerCase();
-  const demo = getDemoAccounts().find(
-    (account) => account.email.toLowerCase() === email && account.password === credentials.password,
-  );
-
-  if (!demo) {
+  if (!backendSession) {
     return null;
   }
 
+  const user = await fetchBackendUser(backendSession);
+
+  return user ? createAuthSession(user) : null;
+}
+
+export function createAuthSession(user: BackendAuthUser): AuthSession {
   return {
     expiresAt: new Date(Date.now() + AUTH_COOKIE_MAX_AGE * 1000).toISOString(),
     user: {
-      email: demo.email,
-      id: demo.id,
-      name: demo.name,
-      role: demo.role,
+      email: user.email,
+      id: String(user.id),
+      isActive: user.is_active,
+      name: user.name,
+      phone: user.phone,
+      role: user.role,
     },
   };
 }
@@ -58,7 +53,21 @@ export function setAuthCookie(response: NextResponse, session: AuthSession) {
     maxAge: AUTH_COOKIE_MAX_AGE,
     path: '/',
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecureCookie(),
+  });
+}
+
+export function setBackendAuthCookie(
+  response: NextResponse,
+  token: string,
+  maxAge = AUTH_COOKIE_MAX_AGE,
+) {
+  response.cookies.set(BACKEND_AUTH_COOKIE_NAME, token, {
+    httpOnly: true,
+    maxAge,
+    path: '/',
+    sameSite: 'lax',
+    secure: isSecureCookie(),
   });
 }
 
@@ -68,7 +77,17 @@ export function clearAuthCookie(response: NextResponse) {
     maxAge: 0,
     path: '/',
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecureCookie(),
+  });
+}
+
+export function clearBackendAuthCookie(response: NextResponse) {
+  response.cookies.set(BACKEND_AUTH_COOKIE_NAME, '', {
+    httpOnly: true,
+    maxAge: 0,
+    path: '/',
+    sameSite: 'lax',
+    secure: isSecureCookie(),
   });
 }
 
@@ -91,64 +110,33 @@ export function getRedirectPathForSession(session: AuthSession | null) {
   return getDefaultRouteByRole(session?.user.role);
 }
 
-export function getDemoCredentialsHint() {
-  return getDemoAccounts().map((account) => ({
-    email: account.email,
-    label: account.role === 'customer' ? 'Обычный пользователь' : 'Администратор',
-    password: isDemoPasswordFromEnv(account.role) ? undefined : account.password,
-    role: account.role,
-  }));
-}
-
-function getDemoAccounts(): DemoAccount[] {
-  return [
-    {
-      email: process.env.AUTH_DEMO_EMAIL ?? DEFAULT_DEMO_EMAIL,
-      id: 'demo-admin',
-      name: 'Администратор',
-      password: process.env.AUTH_DEMO_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
-      role: 'admin',
-    },
-    {
-      email: process.env.AUTH_CUSTOMER_DEMO_EMAIL ?? DEFAULT_CUSTOMER_DEMO_EMAIL,
-      id: 'demo-customer',
-      name: 'Айгерим Садыкова',
-      password: process.env.AUTH_CUSTOMER_DEMO_PASSWORD ?? DEFAULT_CUSTOMER_DEMO_PASSWORD,
-      role: 'customer',
-    },
-  ];
-}
-
-function isDemoPasswordFromEnv(role: AuthRole) {
-  if (role === 'customer') {
-    return Boolean(process.env.AUTH_CUSTOMER_DEMO_PASSWORD);
-  }
-
-  return Boolean(process.env.AUTH_DEMO_PASSWORD);
+export function getDemoCredentialsHint(): CredentialsHint[] {
+  return [];
 }
 
 function encodeAuthSession(session: AuthSession) {
   return Buffer.from(JSON.stringify(session), 'utf8').toString('base64url');
 }
 
-function decodeAuthSession(value: string | undefined): AuthSession | null {
-  if (!value) {
+async function fetchBackendUser(backendSession: string): Promise<BackendAuthUser | null> {
+  const response = await fetch(new URL('/auth/me', normalizedApiBaseUrl()), {
+    cache: 'no-store',
+    headers: {
+      Cookie: `${BACKEND_AUTH_COOKIE_NAME}=${backendSession}`,
+    },
+  }).catch(() => null);
+
+  if (!response?.ok) {
     return null;
   }
 
-  try {
-    const session = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as AuthSession;
+  return (await response.json().catch(() => null)) as BackendAuthUser | null;
+}
 
-    if (!session.expiresAt || Number.isNaN(Date.parse(session.expiresAt))) {
-      return null;
-    }
+function normalizedApiBaseUrl() {
+  return API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
+}
 
-    if (Date.parse(session.expiresAt) <= Date.now()) {
-      return null;
-    }
-
-    return session;
-  } catch {
-    return null;
-  }
+function isSecureCookie() {
+  return API_BASE_URL.startsWith('https://');
 }

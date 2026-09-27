@@ -33,6 +33,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const demoAccounts = getDemoCredentialsHint();
   const primaryDemo =
     demoAccounts.find((account) => account.role === 'customer') ?? demoAccounts[0];
+  const defaultEmail = primaryDemo?.email ?? '';
 
   return (
     <main className={styles.page}>
@@ -64,25 +65,26 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <p className={styles.eyebrow}>Доступ</p>
           <h2>Вход в кабинет</h2>
           <p className={styles.lead}>
-            Сейчас используется временный вход для разработки. Потом этот экран подключим к
-            настоящим токенам бэкенда.
+            Войдите под пользователем, который создан в базе. Роли и доступы проверяет бэкенд.
           </p>
 
           <LoginForm
-            defaultEmail={primaryDemo.email}
-            demoPassword={primaryDemo.password}
+            defaultEmail={defaultEmail}
+            demoPassword={primaryDemo?.password}
             redirectTo={nextPath}
           />
 
-          <div className={styles.demoGrid}>
-            {demoAccounts.map((account) => (
-              <div className={styles.demoBox} key={account.email}>
-                <span>{account.label}</span>
-                <strong>{account.email}</strong>
-                {account.password ? <strong>{account.password}</strong> : null}
-              </div>
-            ))}
-          </div>
+          {demoAccounts.length > 0 ? (
+            <div className={styles.demoGrid}>
+              {demoAccounts.map((account) => (
+                <div className={styles.demoBox} key={account.email}>
+                  <span>{account.label}</span>
+                  <strong>{account.email}</strong>
+                  {account.password ? <strong>{account.password}</strong> : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
         </section>
       </div>
     </main>

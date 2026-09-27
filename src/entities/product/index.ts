@@ -1,4 +1,3 @@
-export { productApi } from './api';
 export {
   addManagerProduct,
   readDeletedManagerProductIds,

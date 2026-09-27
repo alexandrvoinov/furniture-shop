@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config';
+import { BACKEND_AUTH_COOKIE_NAME } from '../lib/auth';
 
 type QueryValue = boolean | null | number | string | undefined;
 type QueryParams = Record<string, QueryValue>;
@@ -37,10 +38,15 @@ export async function apiRequestWithMeta<TResponse>(
   const requestHeaders = new Headers(headers);
   const url = buildApiUrl(endpoint, query);
   const requestBody = prepareBody(body, requestHeaders);
+  const method = (fetchOptions.method ?? 'GET').toUpperCase();
+
+  setCsrfHeader(requestHeaders, method);
+  await attachServerAuthCookie(requestHeaders);
 
   const response = await fetch(url, {
     ...fetchOptions,
     body: requestBody,
+    credentials: fetchOptions.credentials ?? 'include',
     headers: requestHeaders,
   });
 
@@ -98,6 +104,26 @@ function prepareBody(body: ApiRequestOptions['body'], headers: Headers) {
   }
 
   return body;
+}
+
+function setCsrfHeader(headers: Headers, method: string) {
+  if (['DELETE', 'POST', 'PUT'].includes(method) && !headers.has('X-CSRF-Protection')) {
+    headers.set('X-CSRF-Protection', '1');
+  }
+}
+
+async function attachServerAuthCookie(headers: Headers) {
+  if (typeof window !== 'undefined' || headers.has('Cookie')) {
+    return;
+  }
+
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  const session = cookieStore.get(BACKEND_AUTH_COOKIE_NAME)?.value;
+
+  if (session) {
+    headers.set('Cookie', `${BACKEND_AUTH_COOKIE_NAME}=${session}`);
+  }
 }
 
 function isJsonBody(body: ApiRequestOptions['body']): body is JsonBody {

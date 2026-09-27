@@ -5,6 +5,7 @@ import {
   AUTH_DEFAULT_REDIRECT,
   AUTH_CUSTOMER_REDIRECT,
   AUTH_LOGIN_ROUTE,
+  BACKEND_AUTH_COOKIE_NAME,
   getDefaultRouteByRole,
   isManagerRoute,
   isProtectedRoute,
@@ -13,7 +14,7 @@ import {
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const session = readSessionCookie(request.cookies.get(AUTH_COOKIE_NAME)?.value);
-  const hasSession = Boolean(session);
+  const hasSession = Boolean(session && request.cookies.get(BACKEND_AUTH_COOKIE_NAME)?.value);
 
   if (isProtectedRoute(pathname) && !hasSession) {
     const loginUrl = new URL(AUTH_LOGIN_ROUTE, request.url);

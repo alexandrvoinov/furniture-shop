@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { productCategories } from '@/entities/product';
 import { routes } from '@/shared/lib/routes';
 
+import { createProductAction } from '../../_actions/productActions';
 import { PageTitle, PanelTitle } from '../../_components/ManagerUi';
 import styles from '../../ManagerPage.module.scss';
 
@@ -23,7 +24,7 @@ export default function ManagerProductNewPage() {
 
       <section className={styles.panel}>
         <PanelTitle eyebrow="Новый товар" title="Данные товара" />
-        <ProductForm categories={productCategories} />
+        <ProductForm action={createProductAction} categories={productCategories} />
       </section>
     </main>
   );

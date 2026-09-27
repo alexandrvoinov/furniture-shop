@@ -15,7 +15,13 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ProductCard, productCategories, products } from '@/entities/product';
+import {
+  ProductCard,
+  productCategories,
+  products as fallbackProducts,
+  type Product,
+} from '@/entities/product';
+import { productApi } from '@/entities/product/api';
 import { routes } from '@/shared/lib/routes';
 
 import styles from './HomePage.module.scss';
@@ -55,7 +61,9 @@ const workshopFacts = [
   'Кухни, шкафы и гардеробные делаются по размерам помещения',
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredProducts = await loadFeaturedProducts();
+
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
@@ -148,7 +156,7 @@ export default function HomePage() {
             <p>Спокойные формы, точная посадка по стенам и материалы, которые выдерживают быт.</p>
           </div>
           <div className={styles.productGrid}>
-            {products.map((product) => (
+            {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -215,4 +223,10 @@ export default function HomePage() {
       </section>
     </main>
   );
+}
+
+async function loadFeaturedProducts(): Promise<Product[]> {
+  const apiProducts = await productApi.list({ limit: 3, offset: 0 }).catch(() => []);
+
+  return apiProducts.length > 0 ? apiProducts.slice(0, 3) : fallbackProducts;
 }

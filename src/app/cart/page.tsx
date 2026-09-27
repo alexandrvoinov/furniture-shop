@@ -1,9 +1,12 @@
-import { products } from '@/entities/product';
+import { products as fallbackProducts, type Product } from '@/entities/product';
+import { productApi } from '@/entities/product/api';
 
 import { CartView } from './CartView';
 import styles from './CartPage.module.scss';
 
-export default function CartPage() {
+export default async function CartPage() {
+  const products = await loadCartProducts();
+
   return (
     <main className={styles.page}>
       <section className="container">
@@ -16,4 +19,10 @@ export default function CartPage() {
       </section>
     </main>
   );
+}
+
+async function loadCartProducts(): Promise<Product[]> {
+  const apiProducts = await productApi.list({ limit: 100, offset: 0 }).catch(() => []);
+
+  return apiProducts.length > 0 ? apiProducts : fallbackProducts;
 }

@@ -3,7 +3,9 @@ export type AuthRole = 'admin' | 'customer' | 'manager';
 export type AuthUser = {
   email: string;
   id: string;
+  isActive?: boolean;
   name: string;
+  phone?: string;
   role: AuthRole;
 };
 
@@ -19,4 +21,14 @@ export type LoginCredentials = {
 
 export type LoginResponse = {
   session: AuthSession;
+};
+
+export type BackendAuthUser = {
+  created_at: string;
+  email: string;
+  id: number;
+  is_active: boolean;
+  name: string;
+  phone: string;
+  role: AuthRole;
 };

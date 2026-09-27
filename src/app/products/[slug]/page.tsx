@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { AddToCartButton } from '@/entities/cart/ui/AddToCartButton';
 import { getProductBySlug, products } from '@/entities/product';
+import { productApi } from '@/entities/product/api';
 import { formatPrice } from '@/shared/lib/formatters';
 
 import styles from './ProductPage.module.scss';
@@ -16,7 +17,7 @@ type ProductPageProps = {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await loadProduct(slug);
 
   if (!product) {
     notFound();
@@ -104,4 +105,10 @@ export function generateStaticParams() {
   return products.map((product) => ({
     slug: product.slug,
   }));
+}
+
+async function loadProduct(slug: string) {
+  const apiProduct = await productApi.getBySlug(slug).catch(() => null);
+
+  return apiProduct ?? getProductBySlug(slug);
 }

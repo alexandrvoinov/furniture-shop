@@ -1,76 +1,46 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { FormEvent } from 'react';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 
-import { addManagerProduct, type Product, type ProductCategory } from '@/entities/product';
+import type { ProductCategory } from '@/entities/product';
 import { routes } from '@/shared/lib/routes';
-import { showToast } from '@/shared/ui/toast';
 
+import { initialFormState, type ManagerFormState } from '../../_actions/formState';
 import styles from '../../ManagerPage.module.scss';
 
+type ProductFormAction = (state: ManagerFormState, formData: FormData) => Promise<ManagerFormState>;
+
 type ProductFormProps = {
+  action: ProductFormAction;
   categories: ProductCategory[];
 };
 
 const defaultImageUrl = '/images/hero-interior.png';
 
-export function ProductForm({ categories }: ProductFormProps) {
-  const router = useRouter();
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    try {
-      const formData = new FormData(event.currentTarget);
-      const name = getRequiredValue(formData, 'name');
-      const category = getRequiredValue(formData, 'category');
-      const price = getPositiveNumber(formData, 'price');
-      const product: Product = {
-        badge: getOptionalValue(formData, 'badge'),
-        category,
-        description: getRequiredValue(formData, 'description'),
-        dimensions: getRequiredValue(formData, 'dimensions'),
-        id: createProductId(),
-        imagePosition: getOptionalValue(formData, 'imagePosition') || '50% 50%',
-        imageUrl: getOptionalValue(formData, 'imageUrl') || defaultImageUrl,
-        isAvailable: formData.get('isAvailable') !== 'false',
-        materials: getRequiredValue(formData, 'materials'),
-        name,
-        oldPrice: getOptionalNumber(formData, 'oldPrice'),
-        price,
-        slug: getOptionalValue(formData, 'slug') || createProductSlug(name),
-        term: getRequiredValue(formData, 'term'),
-      };
-
-      addManagerProduct(product);
-      showToast({
-        message: `Товар ${product.name} добавлен в панель`,
-        title: 'Товары',
-        variant: 'success',
-      });
-      router.push(routes.managerProducts);
-    } catch (error) {
-      showToast({
-        message: getErrorMessage(error),
-        title: 'Не удалось добавить товар',
-        variant: 'error',
-      });
-    }
-  }
+export function ProductForm({ action, categories }: ProductFormProps) {
+  const [state, formAction] = useActionState(action, initialFormState);
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form action={formAction} className={styles.form} noValidate>
+      {state.message ? <p className={styles.formMessage}>{state.message}</p> : null}
+
       <div className={styles.formGrid}>
         <label className={styles.field}>
           <span>Название</span>
-          <input name="name" placeholder="Кухня Alba" required />
+          <input
+            aria-invalid={Boolean(state.errors?.name)}
+            name="name"
+            placeholder="Кухня Alba"
+            required
+          />
+          <FieldError text={state.errors?.name} />
         </label>
 
         <label className={styles.field}>
           <span>Категория</span>
-          <select name="category" required>
+          <select aria-invalid={Boolean(state.errors?.category)} name="category" required>
             <option value="">Выберите категорию</option>
             {categories.map((category) => (
               <option key={category.id} value={category.title}>
@@ -78,11 +48,19 @@ export function ProductForm({ categories }: ProductFormProps) {
               </option>
             ))}
           </select>
+          <FieldError text={state.errors?.category} />
         </label>
 
         <label className={styles.field}>
           <span>Цена, ₸</span>
-          <input inputMode="decimal" name="price" placeholder="590000" required />
+          <input
+            aria-invalid={Boolean(state.errors?.price)}
+            inputMode="decimal"
+            name="price"
+            placeholder="590000"
+            required
+          />
+          <FieldError text={state.errors?.price} />
         </label>
 
         <label className={styles.field}>
@@ -92,17 +70,35 @@ export function ProductForm({ categories }: ProductFormProps) {
 
         <label className={styles.field}>
           <span>Материалы</span>
-          <input name="materials" placeholder="МДФ эмаль, шпон дуба, кварц" required />
+          <input
+            aria-invalid={Boolean(state.errors?.materials)}
+            name="materials"
+            placeholder="МДФ эмаль, шпон дуба, кварц"
+            required
+          />
+          <FieldError text={state.errors?.materials} />
         </label>
 
         <label className={styles.field}>
           <span>Срок изготовления</span>
-          <input name="term" placeholder="45 дней" required />
+          <input
+            aria-invalid={Boolean(state.errors?.term)}
+            name="term"
+            placeholder="45 дней"
+            required
+          />
+          <FieldError text={state.errors?.term} />
         </label>
 
         <label className={styles.field}>
           <span>Размеры</span>
-          <input name="dimensions" placeholder="от 8 м²" required />
+          <input
+            aria-invalid={Boolean(state.errors?.dimensions)}
+            name="dimensions"
+            placeholder="от 8 м²"
+            required
+          />
+          <FieldError text={state.errors?.dimensions} />
         </label>
 
         <label className={styles.field}>
@@ -120,10 +116,15 @@ export function ProductForm({ categories }: ProductFormProps) {
 
         <label className={styles.field}>
           <span>Slug</span>
-          <input name="slug" placeholder="kitchen-alba" />
+          <input
+            aria-invalid={Boolean(state.errors?.slug)}
+            name="slug"
+            placeholder="kitchen-alba"
+          />
           <span className={styles.fieldHint}>
             Можно оставить пустым, значение создастся автоматически.
           </span>
+          <FieldError text={state.errors?.slug} />
         </label>
 
         <label className={styles.field}>
@@ -139,15 +140,17 @@ export function ProductForm({ categories }: ProductFormProps) {
         <label className={`${styles.field} ${styles.fieldWide}`}>
           <span>Описание</span>
           <textarea
+            aria-invalid={Boolean(state.errors?.description)}
             name="description"
             placeholder="Коротко опишите товар, сценарий использования и особенности."
             required
           />
+          <FieldError text={state.errors?.description} />
         </label>
       </div>
 
       <div className={styles.formActions}>
-        <button type="submit">Сохранить товар</button>
+        <SubmitButton />
         <Link className={styles.secondaryLink} href={routes.managerProducts}>
           Отмена
         </Link>
@@ -156,69 +159,16 @@ export function ProductForm({ categories }: ProductFormProps) {
   );
 }
 
-function getRequiredValue(formData: FormData, key: string) {
-  const value = getOptionalValue(formData, key);
+function SubmitButton() {
+  const { pending } = useFormStatus();
 
-  if (!value) {
-    throw new Error('Заполните обязательные поля товара.');
-  }
-
-  return value;
+  return (
+    <button disabled={pending} type="submit">
+      {pending ? 'Сохраняем...' : 'Сохранить товар'}
+    </button>
+  );
 }
 
-function getOptionalValue(formData: FormData, key: string) {
-  const value = formData.get(key);
-
-  return typeof value === 'string' ? value.trim() : '';
-}
-
-function getPositiveNumber(formData: FormData, key: string) {
-  const rawValue = getRequiredValue(formData, key);
-  const value = parseNumberInput(rawValue);
-
-  if (!Number.isFinite(value) || value <= 0) {
-    throw new Error('Цена должна быть больше нуля.');
-  }
-
-  return value;
-}
-
-function getOptionalNumber(formData: FormData, key: string) {
-  const rawValue = getOptionalValue(formData, key);
-
-  if (!rawValue) {
-    return undefined;
-  }
-
-  const value = parseNumberInput(rawValue);
-
-  return Number.isFinite(value) && value > 0 ? value : undefined;
-}
-
-function parseNumberInput(value: string) {
-  const normalizedValue = value.replace(/\s/g, '').replace(',', '.');
-
-  return Number(normalizedValue);
-}
-
-function createProductId() {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return `manual-${crypto.randomUUID()}`;
-  }
-
-  return `manual-${Date.now()}`;
-}
-
-function createProductSlug(name: string) {
-  const slug = name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-
-  return slug || `manual-${Date.now()}`;
-}
-
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Попробуйте заполнить форму еще раз.';
+function FieldError({ text }: { text?: string }) {
+  return text ? <small className={styles.fieldError}>{text}</small> : null;
 }

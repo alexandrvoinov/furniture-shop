@@ -2,86 +2,45 @@
 
 import { PackageCheck, PackageSearch, Tags } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 
-import {
-  readDeletedManagerProductIds,
-  readManagerProducts,
-  removeManagerProduct,
-  subscribeManagerProductsUpdates,
-  type ManagerProductSource,
-  type Product,
-  type ProductCategory,
-  type StoredManagerProduct,
-} from '@/entities/product';
+import type { ProductCategory } from '@/entities/product';
+import type { ProductWithMeta } from '@/entities/product/api';
 import { formatDateTime, formatPrice } from '@/shared/lib/formatters';
 import { productRoute } from '@/shared/lib/routes';
-import { showToast } from '@/shared/ui/toast';
 
+import { initialFormState, type ManagerFormState } from '../_actions/formState';
 import { EmptyState, PanelTitle, StatCard, StatusBadge } from '../_components/ManagerUi';
 import styles from '../ManagerPage.module.scss';
 
-type ProductRow = Product & {
-  createdAt?: string;
-  source: ManagerProductSource;
+type DeleteProductAction = (
+  state: ManagerFormState,
+  formData: FormData,
+) => Promise<ManagerFormState>;
+
+type ProductRow = ProductWithMeta & {
+  source: 'backend';
 };
 
 type ManagerProductsViewProps = {
   categories: ProductCategory[];
-  initialProducts: Product[];
+  deleteAction: DeleteProductAction;
+  initialProducts: ProductWithMeta[];
 };
 
-export function ManagerProductsView({ categories, initialProducts }: ManagerProductsViewProps) {
-  const [deletedProductIds, setDeletedProductIds] = useState<string[]>([]);
-  const [manualProducts, setManualProducts] = useState<StoredManagerProduct[]>([]);
+export function ManagerProductsView({
+  categories,
+  deleteAction,
+  initialProducts,
+}: ManagerProductsViewProps) {
   const [productToDelete, setProductToDelete] = useState<ProductRow | null>(null);
-
-  const loadProducts = useCallback(() => {
-    setDeletedProductIds(readDeletedManagerProductIds());
-    setManualProducts(readManagerProducts());
-  }, []);
-
-  useEffect(() => {
-    queueMicrotask(loadProducts);
-
-    return subscribeManagerProductsUpdates(loadProducts);
-  }, [loadProducts]);
-
-  const productRows = useMemo<ProductRow[]>(() => {
-    const deletedIds = new Set(deletedProductIds);
-
-    return [
-      ...manualProducts.map((product) => ({ ...product, source: 'manual' as const })),
-      ...initialProducts
-        .filter((product) => !deletedIds.has(product.id))
-        .map((product) => ({ ...product, source: 'catalog' as const })),
-    ];
-  }, [deletedProductIds, initialProducts, manualProducts]);
-
+  const productRows = useMemo<ProductRow[]>(
+    () => initialProducts.map((product) => ({ ...product, source: 'backend' })),
+    [initialProducts],
+  );
   const availableCount = productRows.filter((product) => product.isAvailable).length;
-
-  function handleDeleteProduct() {
-    if (!productToDelete) {
-      return;
-    }
-
-    try {
-      removeManagerProduct(productToDelete.id, productToDelete.source);
-      showToast({
-        message: `Товар ${productToDelete.name} удален`,
-        title: 'Товары',
-        variant: 'success',
-      });
-      setProductToDelete(null);
-      loadProducts();
-    } catch (error) {
-      showToast({
-        message: getErrorMessage(error),
-        title: 'Не удалось удалить товар',
-        variant: 'error',
-      });
-    }
-  }
 
   return (
     <>
@@ -122,7 +81,7 @@ export function ManagerProductsView({ categories, initialProducts }: ManagerProd
             </thead>
             <tbody>
               {productRows.map((product) => (
-                <tr key={`${product.source}-${product.id}`}>
+                <tr key={product.id}>
                   <td>
                     <strong>{product.name}</strong>
                     <span>{product.description}</span>
@@ -138,24 +97,12 @@ export function ManagerProductsView({ categories, initialProducts }: ManagerProd
                     />
                   </td>
                   <td>
-                    {product.source === 'manual' ? (
-                      <>
-                        <StatusBadge label="Локально" />
-                        {product.createdAt ? (
-                          <span>{formatDateTime(product.createdAt)}</span>
-                        ) : null}
-                      </>
-                    ) : (
-                      <StatusBadge label="Каталог" muted />
-                    )}
+                    <StatusBadge label="Backend" />
+                    {product.createdAt ? <span>{formatDateTime(product.createdAt)}</span> : null}
                   </td>
                   <td>
                     <div className={styles.rowActions}>
-                      {product.source === 'catalog' ? (
-                        <Link href={productRoute(product.slug)}>Открыть</Link>
-                      ) : (
-                        <span>Черновик</span>
-                      )}
+                      <Link href={productRoute(product.slug)}>Открыть</Link>
                       <button
                         className={styles.dangerButton}
                         onClick={() => setProductToDelete(product)}
@@ -184,24 +131,13 @@ export function ManagerProductsView({ categories, initialProducts }: ManagerProd
             <p className={styles.eyebrow}>Подтверждение</p>
             <h2 id="delete-product-title">Вы действительно хотите удалить этот товар?</h2>
             <p className={styles.confirmText}>
-              Товар <strong>{productToDelete.name}</strong> будет убран из списка товаров в панели.
+              Товар <strong>{productToDelete.name}</strong> будет скрыт в каталоге.
             </p>
-            <div className={styles.confirmActions}>
-              <button
-                className={styles.secondaryButton}
-                onClick={() => setProductToDelete(null)}
-                type="button"
-              >
-                Отмена
-              </button>
-              <button
-                className={styles.confirmDangerButton}
-                onClick={handleDeleteProduct}
-                type="button"
-              >
-                Удалить
-              </button>
-            </div>
+            <ProductDeleteForm
+              action={deleteAction}
+              onCancel={() => setProductToDelete(null)}
+              product={productToDelete}
+            />
           </section>
         </div>
       ) : null}
@@ -209,6 +145,37 @@ export function ManagerProductsView({ categories, initialProducts }: ManagerProd
   );
 }
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Попробуйте удалить товар еще раз.';
+function ProductDeleteForm({
+  action,
+  onCancel,
+  product,
+}: {
+  action: DeleteProductAction;
+  onCancel: () => void;
+  product: ProductRow;
+}) {
+  const [state, formAction] = useActionState(action, initialFormState);
+
+  return (
+    <form action={formAction}>
+      <input name="id" type="hidden" value={product.id} />
+      <div className={styles.confirmActions}>
+        <button className={styles.secondaryButton} onClick={onCancel} type="button">
+          Отмена
+        </button>
+        <DeleteButton />
+      </div>
+      {state.message ? <small className={styles.deleteError}>{state.message}</small> : null}
+    </form>
+  );
+}
+
+function DeleteButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button className={styles.confirmDangerButton} disabled={pending} type="submit">
+      {pending ? 'Удаляем...' : 'Удалить'}
+    </button>
+  );
 }

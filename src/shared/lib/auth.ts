@@ -1,5 +1,6 @@
 export const AUTH_COOKIE_NAME = 'mebel_manager_session';
-export const AUTH_COOKIE_MAX_AGE = 60 * 60 * 8;
+export const BACKEND_AUTH_COOKIE_NAME = 'session';
+export const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 export const AUTH_ADMIN_REDIRECT = '/manager';
 export const AUTH_CUSTOMER_REDIRECT = '/profile';
 export const AUTH_DEFAULT_REDIRECT = '/cabinet';

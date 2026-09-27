@@ -17,10 +17,14 @@ export type Product = {
 
 export type ProductFilters = {
   category?: string;
+  limit?: number;
   maxPrice?: number;
   minPrice?: number;
+  offset?: number;
   search?: string;
 };
+
+export type ProductPayload = Omit<Product, 'id'>;
 
 export type ProductCategory = {
   description: string;

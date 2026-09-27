@@ -1,6 +1,12 @@
 import Link from 'next/link';
 
-import { ProductCard, productCategories, products } from '@/entities/product';
+import {
+  ProductCard,
+  productCategories,
+  products as fallbackProducts,
+  type Product,
+} from '@/entities/product';
+import { productApi } from '@/entities/product/api';
 import { routes } from '@/shared/lib/routes';
 
 import styles from './CatalogPage.module.scss';
@@ -23,9 +29,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const params = await searchParams;
   const selectedCategoryId = getSearchParamValue(params?.category);
   const selectedCategory = productCategories.find((category) => category.id === selectedCategoryId);
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => product.category === selectedCategory.title)
-    : products;
+  const filteredProducts = await loadCatalogProducts(selectedCategory?.title);
 
   return (
     <main className={styles.page}>
@@ -71,4 +75,16 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       </section>
     </main>
   );
+}
+
+async function loadCatalogProducts(category?: string): Promise<Product[]> {
+  const apiProducts = await productApi.list({ category, limit: 100, offset: 0 }).catch(() => []);
+
+  if (apiProducts.length > 0) {
+    return apiProducts;
+  }
+
+  return category
+    ? fallbackProducts.filter((product) => product.category === category)
+    : fallbackProducts;
 }
