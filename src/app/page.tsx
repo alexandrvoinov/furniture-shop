@@ -15,12 +15,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 
-import {
-  ProductCard,
-  productCategories,
-  products as fallbackProducts,
-  type Product,
-} from '@/entities/product';
+import { ProductCard, productCategories, type Product } from '@/entities/product';
 import { productApi } from '@/entities/product/api';
 import { routes } from '@/shared/lib/routes';
 
@@ -155,11 +150,19 @@ export default async function HomePage() {
             <h2>Популярные решения для квартиры и дома</h2>
             <p>Спокойные формы, точная посадка по стенам и материалы, которые выдерживают быт.</p>
           </div>
-          <div className={styles.productGrid}>
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {featuredProducts.length > 0 ? (
+            <div className={styles.productGrid}>
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyBlock}>
+              <h3>Каталог скоро появится</h3>
+              <p>Товары будут отображаться здесь после добавления в панели менеджера.</p>
+              <Link href={routes.catalog}>Открыть каталог</Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -228,5 +231,5 @@ export default async function HomePage() {
 async function loadFeaturedProducts(): Promise<Product[]> {
   const apiProducts = await productApi.list({ limit: 3, offset: 0 }).catch(() => []);
 
-  return apiProducts.length > 0 ? apiProducts.slice(0, 3) : fallbackProducts;
+  return apiProducts.slice(0, 3);
 }

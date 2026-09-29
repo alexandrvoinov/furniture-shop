@@ -30,7 +30,10 @@ export function ApiNotice({ errors }: { errors: string[] }) {
   return (
     <div className={styles.notice} role="status">
       <span aria-hidden="true">!</span>
-      <p>Не удалось загрузить: {errors.join(', ')}. Проверьте backend на 127.0.0.1:8000.</p>
+      <p>
+        Не удалось загрузить: {errors.join(', ')}. Проверьте backend и переменную
+        NEXT_PUBLIC_API_URL.
+      </p>
     </div>
   );
 }

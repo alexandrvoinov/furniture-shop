@@ -23,6 +23,13 @@ export type LoginResponse = {
   session: AuthSession;
 };
 
+export type RegisterCredentials = {
+  email: string;
+  name: string;
+  password: string;
+  phone: string;
+};
+
 export type BackendAuthUser = {
   created_at: string;
   email: string;

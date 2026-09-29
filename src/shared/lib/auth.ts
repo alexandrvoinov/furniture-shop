@@ -5,6 +5,7 @@ export const AUTH_ADMIN_REDIRECT = '/manager';
 export const AUTH_CUSTOMER_REDIRECT = '/profile';
 export const AUTH_DEFAULT_REDIRECT = '/cabinet';
 export const AUTH_LOGIN_ROUTE = '/login';
+export const AUTH_REGISTER_ROUTE = '/register';
 
 export type SessionRole = 'admin' | 'customer' | 'manager';
 

@@ -7,18 +7,12 @@ import {
   AUTH_COOKIE_NAME,
   AUTH_DEFAULT_REDIRECT,
   AUTH_LOGIN_ROUTE,
+  AUTH_REGISTER_ROUTE,
   BACKEND_AUTH_COOKIE_NAME,
   getDefaultRouteByRole,
 } from '@/shared/lib/auth';
 
-import type { AuthRole, AuthSession, BackendAuthUser } from './types';
-
-type CredentialsHint = {
-  email: string;
-  label: string;
-  password?: string;
-  role: AuthRole;
-};
+import type { AuthSession, BackendAuthUser } from './types';
 
 export async function getAuthSession(): Promise<AuthSession | null> {
   const cookieStore = await cookies();
@@ -98,7 +92,9 @@ export function getSafeRedirectPath(value: string | null | undefined) {
     value.startsWith('//') ||
     value.startsWith('/api/') ||
     value === AUTH_LOGIN_ROUTE ||
-    value.startsWith(`${AUTH_LOGIN_ROUTE}?`)
+    value.startsWith(`${AUTH_LOGIN_ROUTE}?`) ||
+    value === AUTH_REGISTER_ROUTE ||
+    value.startsWith(`${AUTH_REGISTER_ROUTE}?`)
   ) {
     return AUTH_DEFAULT_REDIRECT;
   }
@@ -108,10 +104,6 @@ export function getSafeRedirectPath(value: string | null | undefined) {
 
 export function getRedirectPathForSession(session: AuthSession | null) {
   return getDefaultRouteByRole(session?.user.role);
-}
-
-export function getDemoCredentialsHint(): CredentialsHint[] {
-  return [];
 }
 
 function encodeAuthSession(session: AuthSession) {
@@ -138,5 +130,9 @@ function normalizedApiBaseUrl() {
 }
 
 function isSecureCookie() {
-  return API_BASE_URL.startsWith('https://');
+  if (process.env.AUTH_COOKIE_SECURE) {
+    return process.env.AUTH_COOKIE_SECURE === 'true';
+  }
+
+  return process.env.NODE_ENV === 'production' || API_BASE_URL.startsWith('https://');
 }

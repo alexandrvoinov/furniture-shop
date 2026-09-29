@@ -200,32 +200,44 @@
   transform: none;
 }
 
-.demoGrid {
-  display: grid;
-  gap: 10px;
-  margin-top: 22px;
+.switchText {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
 }
 
-.demoBox {
+.switchText a {
+  color: var(--color-brand);
+  font-weight: 850;
+}
+
+.panelNote {
   display: grid;
-  gap: 6px;
+  gap: 8px;
+  margin: 22px 0 0;
   border-radius: 8px;
   background: var(--color-card);
   color: var(--color-muted);
   font-size: 13px;
+  line-height: 1.5;
   padding: 14px;
 }
 
-.demoBox span {
-  color: var(--color-brand);
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.demoBox strong {
+.panelNote code {
   overflow-wrap: anywhere;
   color: var(--color-text);
+  font-family: var(--font-geist-mono), Consolas, monospace;
+  font-size: 12px;
+}
+
+.secondaryPanelLink {
+  width: fit-content;
+  margin-top: 16px;
+  color: var(--color-brand);
   font-size: 14px;
+  font-weight: 850;
 }
 
 @media (max-width: 920px) {

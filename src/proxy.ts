@@ -5,6 +5,7 @@ import {
   AUTH_DEFAULT_REDIRECT,
   AUTH_CUSTOMER_REDIRECT,
   AUTH_LOGIN_ROUTE,
+  AUTH_REGISTER_ROUTE,
   BACKEND_AUTH_COOKIE_NAME,
   getDefaultRouteByRole,
   isManagerRoute,
@@ -27,7 +28,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(AUTH_CUSTOMER_REDIRECT, request.url));
   }
 
-  if (pathname === AUTH_LOGIN_ROUTE && hasSession) {
+  if ((pathname === AUTH_LOGIN_ROUTE || pathname === AUTH_REGISTER_ROUTE) && hasSession) {
     return NextResponse.redirect(
       new URL(getDefaultRouteByRole(session?.role) || AUTH_DEFAULT_REDIRECT, request.url),
     );
@@ -37,7 +38,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/manager/:path*', '/profile/:path*', '/login'],
+  matcher: ['/manager/:path*', '/profile/:path*', '/login', '/register'],
 };
 
 function readSessionCookie(

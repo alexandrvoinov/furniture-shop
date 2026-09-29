@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { AddToCartButton } from '@/entities/cart/ui/AddToCartButton';
-import { getProductBySlug, products } from '@/entities/product';
 import { productApi } from '@/entities/product/api';
 import { formatPrice } from '@/shared/lib/formatters';
 
@@ -101,14 +100,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-export function generateStaticParams() {
-  return products.map((product) => ({
-    slug: product.slug,
-  }));
-}
-
 async function loadProduct(slug: string) {
-  const apiProduct = await productApi.getBySlug(slug).catch(() => null);
-
-  return apiProduct ?? getProductBySlug(slug);
+  return productApi.getBySlug(slug).catch(() => null);
 }

@@ -1,11 +1,6 @@
 import Link from 'next/link';
 
-import {
-  ProductCard,
-  productCategories,
-  products as fallbackProducts,
-  type Product,
-} from '@/entities/product';
+import { ProductCard, productCategories, type Product } from '@/entities/product';
 import { productApi } from '@/entities/product/api';
 import { routes } from '@/shared/lib/routes';
 
@@ -71,6 +66,15 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
+          {filteredProducts.length === 0 ? (
+            <div className={styles.emptyState}>
+              <h2>Товары пока не добавлены</h2>
+              <p>
+                Здесь появятся позиции из backend-каталога. Добавьте товары в панели менеджера,
+                чтобы они стали доступны покупателям.
+              </p>
+            </div>
+          ) : null}
         </div>
       </section>
     </main>
@@ -78,13 +82,5 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 }
 
 async function loadCatalogProducts(category?: string): Promise<Product[]> {
-  const apiProducts = await productApi.list({ category, limit: 100, offset: 0 }).catch(() => []);
-
-  if (apiProducts.length > 0) {
-    return apiProducts;
-  }
-
-  return category
-    ? fallbackProducts.filter((product) => product.category === category)
-    : fallbackProducts;
+  return productApi.list({ category, limit: 100, offset: 0 }).catch(() => []);
 }

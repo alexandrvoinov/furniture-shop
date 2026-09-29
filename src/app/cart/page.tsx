@@ -1,4 +1,4 @@
-import { products as fallbackProducts, type Product } from '@/entities/product';
+import type { Product } from '@/entities/product';
 import { productApi } from '@/entities/product/api';
 
 import { CartView } from './CartView';
@@ -22,7 +22,5 @@ export default async function CartPage() {
 }
 
 async function loadCartProducts(): Promise<Product[]> {
-  const apiProducts = await productApi.list({ limit: 100, offset: 0 }).catch(() => []);
-
-  return apiProducts.length > 0 ? apiProducts : fallbackProducts;
+  return productApi.list({ limit: 100, offset: 0 }).catch(() => []);
 }

@@ -1,23 +1,24 @@
 'use client';
 
 import { LockKeyhole, LogIn, Mail } from 'lucide-react';
+import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { AuthRequestError, login } from '@/entities/auth';
+import { routes } from '@/shared/lib/routes';
 
 import styles from './LoginPage.module.scss';
 
 type LoginFormProps = {
   defaultEmail: string;
-  demoPassword?: string;
   redirectTo: string;
 };
 
-export function LoginForm({ defaultEmail, demoPassword, redirectTo }: LoginFormProps) {
+export function LoginForm({ defaultEmail, redirectTo }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState(defaultEmail);
-  const [password, setPassword] = useState(demoPassword ?? '');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isPending, setIsPending] = useState(false);
 
@@ -87,6 +88,10 @@ export function LoginForm({ defaultEmail, demoPassword, redirectTo }: LoginFormP
         <LogIn size={18} strokeWidth={1.8} aria-hidden="true" />
         {isPending ? 'Входим...' : 'Войти'}
       </button>
+
+      <p className={styles.switchText}>
+        Нет аккаунта? <Link href={routes.register}>Зарегистрироваться</Link>
+      </p>
     </form>
   );
 }

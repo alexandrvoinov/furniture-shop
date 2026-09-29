@@ -75,7 +75,8 @@
 .summaryGrid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 420px;
 }
 
 .summaryCard,
@@ -162,15 +163,6 @@
   border-radius: 50%;
   background: #ffffff;
   color: var(--color-muted);
-}
-
-.stepDone {
-  background: var(--color-brand-soft);
-  color: var(--color-brand);
-}
-
-.stepDone span {
-  color: var(--color-brand);
 }
 
 .details {

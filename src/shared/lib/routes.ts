@@ -4,6 +4,7 @@ export const routes = {
   cabinet: '/cabinet',
   home: '/',
   login: '/login',
+  register: '/register',
   manager: '/manager',
   managerClients: '/manager/clients',
   managerClientNew: '/manager/clients/new',

@@ -14,7 +14,7 @@
   margin: 0 auto;
   align-items: center;
   gap: 22px;
-  grid-template-columns: auto 1fr minmax(220px, 310px) auto;
+  grid-template-columns: auto 1fr minmax(200px, 280px) auto;
 }
 
 .logo {
@@ -76,10 +76,55 @@
   padding-left: 42px;
 }
 
-.cartButton {
+.actions {
   display: inline-flex;
-  width: 44px;
-  height: 44px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.authLink {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1;
+  padding: 0 12px;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+  white-space: nowrap;
+}
+
+.authLink:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.authLinkPrimary {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: #ffffff;
+}
+
+.authLinkPrimary:hover {
+  background: var(--color-brand-hover);
+  color: #ffffff;
+}
+
+.cartButton,
+.profileButton {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
@@ -95,6 +140,17 @@
 .cartButton:hover {
   border-color: var(--color-brand);
   background: var(--color-brand);
+  color: #ffffff;
+}
+
+.profileButton {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: #ffffff;
+}
+
+.profileButton:hover {
+  background: var(--color-brand-hover);
   color: #ffffff;
 }
 
@@ -115,7 +171,12 @@
     grid-row: 3;
   }
 
-  .cartButton {
+  .actions {
+    justify-self: flex-end;
+  }
+
+  .cartButton,
+  .profileButton {
     justify-self: flex-end;
   }
 }
@@ -130,5 +191,22 @@
 
   .navLink {
     flex: 0 0 auto;
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .authLink {
+    flex: 1 1 0;
+    padding: 0 10px;
+  }
+
+  .cartButton,
+  .profileButton {
+    flex: 0 0 40px;
   }
 }

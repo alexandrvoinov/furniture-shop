@@ -1,4 +1,4 @@
-import type { AuthSession, LoginCredentials, LoginResponse } from './types';
+import type { AuthSession, LoginCredentials, LoginResponse, RegisterCredentials } from './types';
 
 type ErrorBody = {
   message?: string;
@@ -16,6 +16,20 @@ export class AuthRequestError extends Error {
 
 export async function login(credentials: LoginCredentials): Promise<AuthSession> {
   const response = await fetch('/api/auth/login', {
+    body: JSON.stringify(credentials),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  });
+
+  const result = await parseAuthResponse<LoginResponse>(response);
+
+  return result.session;
+}
+
+export async function register(credentials: RegisterCredentials): Promise<AuthSession> {
+  const response = await fetch('/api/auth/register', {
     body: JSON.stringify(credentials),
     headers: {
       'Content-Type': 'application/json',

@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 
 import {
   getAuthSession,
-  getDemoCredentialsHint,
   getRedirectPathForSession,
   getSafeRedirectPath,
 } from '@/entities/auth/server';
@@ -29,11 +28,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   if (session) {
     redirect(nextPath === '/cabinet' ? getRedirectPathForSession(session) : nextPath);
   }
-
-  const demoAccounts = getDemoCredentialsHint();
-  const primaryDemo =
-    demoAccounts.find((account) => account.role === 'customer') ?? demoAccounts[0];
-  const defaultEmail = primaryDemo?.email ?? '';
 
   return (
     <main className={styles.page}>
@@ -68,23 +62,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Войдите под пользователем, который создан в базе. Роли и доступы проверяет бэкенд.
           </p>
 
-          <LoginForm
-            defaultEmail={defaultEmail}
-            demoPassword={primaryDemo?.password}
-            redirectTo={nextPath}
-          />
-
-          {demoAccounts.length > 0 ? (
-            <div className={styles.demoGrid}>
-              {demoAccounts.map((account) => (
-                <div className={styles.demoBox} key={account.email}>
-                  <span>{account.label}</span>
-                  <strong>{account.email}</strong>
-                  {account.password ? <strong>{account.password}</strong> : null}
-                </div>
-              ))}
-            </div>
-          ) : null}
+          <LoginForm defaultEmail="" redirectTo={nextPath} />
         </section>
       </div>
     </main>

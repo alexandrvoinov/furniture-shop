@@ -36,8 +36,8 @@ export default async function ManagerLayout({ children }: { children: ReactNode 
             <LogoutButton />
           </div>
           <div className={styles.sidebarNote}>
-            <span>API</span>
-            <strong>127.0.0.1:8000</strong>
+            <span>Данные</span>
+            <strong>Backend API</strong>
           </div>
         </aside>
         <div className={styles.workspace}>{children}</div>
