@@ -1,0 +1,44 @@
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.02);
+  transition:
+    opacity 520ms ease,
+    transform 720ms ease;
+}
+
+.imageActive {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dots {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: rgba(23, 23, 23, 0.32);
+  cursor: pointer;
+  padding: 0;
+}
+
+.dotActive {
+  background: #ffffff;
+}

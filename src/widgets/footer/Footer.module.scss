@@ -4,13 +4,13 @@
 }
 
 .inner {
-  display: flex;
+  display: grid;
   width: min(100% - 32px, var(--container-width));
-  min-height: 132px;
+  min-height: 168px;
   margin: 0 auto;
   align-items: center;
-  justify-content: space-between;
   gap: 32px;
+  grid-template-columns: 1fr auto auto;
   color: rgba(255, 255, 255, 0.72);
   font-size: 14px;
 }
@@ -22,12 +22,30 @@
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: #ffffff;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
-.links {
+.logoMark {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--color-brand);
+}
+
+.logoMark img {
+  object-fit: cover;
+}
+
+.links,
+.contacts {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -35,23 +53,29 @@
   gap: 18px;
 }
 
-.links a {
+.contacts {
+  max-width: 260px;
+}
+
+.links a,
+.contacts a {
   transition: color 160ms ease;
 }
 
-.links a:hover {
+.links a:hover,
+.contacts a:hover {
   color: #f5d9d0;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 900px) {
   .inner {
     align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-    padding: 28px 0;
+    grid-template-columns: 1fr;
+    padding: 34px 0;
   }
 
-  .links {
+  .links,
+  .contacts {
     justify-content: flex-start;
   }
 }

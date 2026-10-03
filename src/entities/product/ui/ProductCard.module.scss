@@ -1,4 +1,7 @@
 .root {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -31,11 +34,15 @@
   background: var(--color-brand);
   color: #ffffff;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   padding: 7px 11px;
 }
 
 .body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
   padding: 20px;
 }
 
@@ -46,107 +53,79 @@
   gap: 12px;
   color: var(--color-muted);
   font-size: 13px;
+  font-weight: 750;
 }
 
 .title {
-  display: inline-block;
-  margin-top: 12px;
   color: var(--color-text);
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 850;
+  line-height: 1.2;
 }
 
 .description {
   min-height: 66px;
-  margin: 10px 0 0;
+  margin: 0;
   color: var(--color-muted);
   font-size: 15px;
   line-height: 1.5;
 }
 
-.footer {
-  display: flex;
-  margin-top: 22px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+.specs {
+  display: grid;
+  gap: 10px;
+  margin: 0;
 }
 
-.cardActions {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 8px;
+.specs div {
+  display: grid;
+  align-items: start;
+  gap: 2px 9px;
+  grid-template-columns: auto 1fr;
 }
 
-.price {
-  display: block;
+.specs svg {
+  grid-row: span 2;
+  margin-top: 2px;
+  color: var(--color-brand);
+}
+
+.specs dt {
   color: var(--color-text);
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 850;
 }
 
-.oldPrice {
-  display: block;
-  margin-top: 4px;
+.specs dd {
+  margin: 0;
   color: var(--color-muted);
   font-size: 14px;
-  text-decoration: line-through;
+  line-height: 1.4;
 }
 
-.cartButton,
 .more {
   display: inline-flex;
-  height: 42px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
-  border: 0;
-  color: #ffffff;
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.cartButton {
   gap: 8px;
+  margin-top: auto;
   border-radius: 8px;
   background: var(--color-brand);
-  padding: 0 14px;
-  white-space: nowrap;
+  color: #ffffff;
+  font-weight: 850;
   transition:
     background 160ms ease,
     transform 160ms ease;
 }
 
-.more {
-  width: 42px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--color-text);
-  transition:
-    background 160ms ease,
-    transform 160ms ease;
-}
-
-.cartButton:hover,
 .more:hover {
   background: var(--color-brand-hover);
-}
-
-.cartButton:hover {
   transform: translateY(-1px);
-}
-
-.more:hover {
-  transform: translateX(2px);
 }
 
 @media (max-width: 760px) {
   .description {
     min-height: auto;
-  }
-
-  .footer {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }

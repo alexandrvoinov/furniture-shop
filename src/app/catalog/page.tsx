@@ -1,12 +1,14 @@
+import { Camera, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import { ProductCard, productCategories, type Product } from '@/entities/product';
 import { productApi } from '@/entities/product/api';
+import { createWhatsappLink } from '@/shared/config/contacts';
 import { routes } from '@/shared/lib/routes';
 
 import styles from './CatalogPage.module.scss';
 
-type CatalogPageProps = {
+type WorksPageProps = {
   searchParams?: Promise<{
     category?: string | string[];
   }>;
@@ -20,34 +22,55 @@ const getFilterClassName = (isActive: boolean) => {
   return isActive ? `${styles.filterButton} ${styles.filterButtonActive}` : styles.filterButton;
 };
 
-export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+export default async function WorksPage({ searchParams }: WorksPageProps) {
   const params = await searchParams;
   const selectedCategoryId = getSearchParamValue(params?.category);
   const selectedCategory = productCategories.find((category) => category.id === selectedCategoryId);
-  const filteredProducts = await loadCatalogProducts(selectedCategory?.title);
+  const projects = await loadProjects(selectedCategory?.title);
 
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
         <div className="container">
-          <p className={styles.eyebrow}>Каталог</p>
-          <h1>Мебель под размеры, материалы и сценарии жизни</h1>
+          <p className={styles.eyebrow}>Наши работы</p>
+          <h1>Готовые проекты мебели на заказ с материалами, размерами и сроками</h1>
           <p>
-            Выберите направление, сравните решения и отправьте заявку на расчет проекта под ваше
-            помещение.
+            Здесь не магазин готовых товаров, а портфолио выполненных решений: кухни, шкафы,
+            гардеробные и встроенное хранение под конкретные помещения.
           </p>
+          <div className={styles.heroActions}>
+            <a
+              className={styles.primaryButton}
+              href={createWhatsappLink(
+                'Здравствуйте! Хочу обсудить похожий проект мебели. Могу отправить фото и размеры.',
+              )}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Обсудить похожий проект
+            </a>
+            <a
+              className={styles.secondaryButton}
+              href={createWhatsappLink('Здравствуйте! Хочу обсудить похожий проект мебели.')}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <MessageCircle size={18} strokeWidth={1.8} aria-hidden="true" />
+              WhatsApp
+            </a>
+          </div>
         </div>
       </section>
 
       <section className={styles.catalog}>
         <div className="container">
-          <div className={styles.filterBar} aria-label="Фильтры каталога">
+          <div className={styles.filterBar} aria-label="Фильтры работ">
             <Link
               aria-current={!selectedCategory ? 'page' : undefined}
               className={getFilterClassName(!selectedCategory)}
-              href={routes.catalog}
+              href={routes.works}
             >
-              Все
+              Все работы
             </Link>
             {productCategories.map((category) => (
               <Link
@@ -61,26 +84,28 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             ))}
           </div>
 
-          <div className={styles.grid}>
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-          {filteredProducts.length === 0 ? (
+          {projects.length > 0 ? (
+            <div className={styles.grid}>
+              {projects.map((project) => (
+                <ProductCard key={project.id} product={project} />
+              ))}
+            </div>
+          ) : (
             <div className={styles.emptyState}>
-              <h2>Товары пока не добавлены</h2>
+              <Camera size={28} strokeWidth={1.6} aria-hidden="true" />
+              <h2>Работы пока не добавлены</h2>
               <p>
-                Здесь появятся позиции из backend-каталога. Добавьте товары в панели менеджера,
-                чтобы они стали доступны покупателям.
+                Когда backend начнёт отдавать проекты с фото, типом мебели, материалами, размерами,
+                сроком и примерной стоимостью, они появятся здесь автоматически.
               </p>
             </div>
-          ) : null}
+          )}
         </div>
       </section>
     </main>
   );
 }
 
-async function loadCatalogProducts(category?: string): Promise<Product[]> {
+async function loadProjects(category?: string): Promise<Product[]> {
   return productApi.list({ category, limit: 100, offset: 0 }).catch(() => []);
 }

@@ -138,6 +138,44 @@
   padding: 64px 0;
 }
 
+.projectMedia {
+  padding: 0 0 76px;
+}
+
+.mediaGrid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 24px;
+}
+
+.mediaItem {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--color-card);
+  box-shadow: var(--shadow-soft);
+  margin: 0;
+}
+
+.mediaItem img {
+  object-fit: cover;
+}
+
+.mediaItem figcaption {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  border-radius: 8px;
+  background: rgba(23, 23, 23, 0.64);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 10px 12px;
+}
+
 .serviceInner {
   display: grid;
   gap: 22px;
@@ -167,6 +205,7 @@
 
 @media (max-width: 900px) {
   .product,
+  .mediaGrid,
   .serviceInner {
     grid-template-columns: 1fr;
   }

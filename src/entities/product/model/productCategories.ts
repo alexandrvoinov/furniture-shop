@@ -4,24 +4,21 @@ import type { ProductCategory } from '../types';
 
 export const productCategories: ProductCategory[] = [
   {
-    description: 'Фасады, хранение, столешницы и техника в единой композиции.',
-    href: `${routes.catalog}?category=kitchens`,
+    description: 'Фасады, столешницы, техника и хранение в единой композиции под размеры кухни.',
+    href: `${routes.works}?category=kitchens`,
     id: 'kitchens',
-    imagePosition: '50% 50%',
     title: 'Кухни',
   },
   {
-    description: 'Распашные, купе и встроенные системы под размеры комнаты.',
-    href: `${routes.catalog}?category=wardrobes`,
+    description: 'Распашные, купе и встроенные системы, которые используют каждый сантиметр.',
+    href: `${routes.works}?category=wardrobes`,
     id: 'wardrobes',
-    imagePosition: '76% 50%',
     title: 'Шкафы',
   },
   {
-    description: 'Гардеробные, постирочные и скрытые зоны хранения.',
-    href: `${routes.catalog}?category=storage`,
+    description: 'Гардеробные, постирочные и скрытые зоны хранения с продуманным наполнением.',
+    href: `${routes.works}?category=storage`,
     id: 'storage',
-    imagePosition: '88% 42%',
     title: 'Гардеробные',
   },
 ];

@@ -1,97 +1,143 @@
-import { BadgeCheck, Clock, Ruler, ShieldCheck, Truck } from 'lucide-react';
+import {
+  ArrowRight,
+  BadgeCheck,
+  Clock,
+  Layers,
+  MessageCircle,
+  Ruler,
+  ShieldCheck,
+} from 'lucide-react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-import { AddToCartButton } from '@/entities/cart/ui/AddToCartButton';
 import { productApi } from '@/entities/product/api';
+import { createWhatsappLink } from '@/shared/config/contacts';
 import { formatPrice } from '@/shared/lib/formatters';
 
 import styles from './ProductPage.module.scss';
 
-type ProductPageProps = {
+type ProjectPageProps = {
   params: Promise<{
     slug: string;
   }>;
 };
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params;
-  const product = await loadProduct(slug);
+  const project = await loadProject(slug);
 
-  if (!product) {
+  if (!project) {
     notFound();
   }
+
+  const galleryMedia = project.media?.filter((media) => media.kind === 'image') ?? [];
 
   return (
     <main className={styles.page}>
       <section className={`container ${styles.product}`}>
         <div className={styles.gallery}>
           <Image
-            alt={product.name}
+            alt={project.name}
             className={styles.image}
             fill
             priority
             sizes="(max-width: 900px) 100vw, 54vw"
-            src={product.imageUrl}
-            style={{ objectPosition: product.imagePosition }}
+            src={project.imageUrl}
           />
         </div>
 
         <div className={styles.info}>
-          <p className={styles.eyebrow}>{product.category}</p>
-          <h1>{product.name}</h1>
-          <p className={styles.description}>{product.description}</p>
+          <p className={styles.eyebrow}>{project.category}</p>
+          <h1>{project.name}</h1>
+          <p className={styles.description}>{project.description}</p>
 
           <div className={styles.priceBlock}>
-            <span className={styles.price}>{formatPrice(product.price)}</span>
-            {product.oldPrice ? (
-              <span className={styles.oldPrice}>{formatPrice(product.oldPrice)}</span>
+            <span className={styles.price}>
+              {project.price ? `От ${formatPrice(project.price)}` : 'Стоимость по запросу'}
+            </span>
+            {project.oldPrice ? (
+              <span className={styles.oldPrice}>{formatPrice(project.oldPrice)}</span>
             ) : null}
           </div>
 
           <div className={styles.actions}>
-            <AddToCartButton
+            <a
               className={styles.primaryButton}
-              productId={product.id}
-              productName={product.name}
-            />
-            <button className={styles.secondaryButton} type="button">
-              Рассчитать проект
-            </button>
+              href={createWhatsappLink(
+                `Здравствуйте! Хочу обсудить похожий проект мебели: ${project.name}.`,
+              )}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Обсудить похожий проект
+              <ArrowRight size={18} aria-hidden="true" />
+            </a>
+            <a
+              className={styles.secondaryButton}
+              href={createWhatsappLink(`Здравствуйте! Хочу обсудить проект: ${project.name}.`)}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <MessageCircle size={18} strokeWidth={1.8} aria-hidden="true" />
+              WhatsApp
+            </a>
           </div>
 
           <dl className={styles.specs}>
             <div>
               <Ruler size={20} strokeWidth={1.6} aria-hidden="true" />
               <dt>Размер</dt>
-              <dd>{product.dimensions}</dd>
+              <dd>{project.dimensions || 'По замеру'}</dd>
             </div>
             <div>
               <Clock size={20} strokeWidth={1.6} aria-hidden="true" />
-              <dt>Срок</dt>
-              <dd>{product.term}</dd>
+              <dt>Срок изготовления</dt>
+              <dd>{project.term || 'После согласования'}</dd>
             </div>
             <div>
-              <BadgeCheck size={20} strokeWidth={1.6} aria-hidden="true" />
+              <Layers size={20} strokeWidth={1.6} aria-hidden="true" />
               <dt>Материалы</dt>
-              <dd>{product.materials}</dd>
+              <dd>{project.materials || 'Подбираются под проект'}</dd>
             </div>
           </dl>
         </div>
       </section>
 
+      {galleryMedia.length > 1 ? (
+        <section className={styles.projectMedia}>
+          <div className="container">
+            <p className={styles.eyebrow}>Фото проекта</p>
+            <div className={styles.mediaGrid}>
+              {galleryMedia.map((media) => (
+                <figure className={styles.mediaItem} key={media.url}>
+                  <Image
+                    alt={media.caption || project.name}
+                    fill
+                    sizes="(max-width: 760px) 100vw, 33vw"
+                    src={media.url}
+                  />
+                  {media.caption ? <figcaption>{media.caption}</figcaption> : null}
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className={styles.service}>
         <div className={`container ${styles.serviceInner}`}>
           <article>
             <ShieldCheck size={28} strokeWidth={1.5} aria-hidden="true" />
-            <h2>Индивидуальное изготовление</h2>
-            <p>Проект адаптируется под помещение, хранение, фасады, технику и монтажные узлы.</p>
+            <h2>Стоимость ориентировочная</h2>
+            <p>
+              Финальная цена зависит от замера, фурнитуры, фасадов, наполнения, доставки и монтажа.
+            </p>
           </article>
           <article>
-            <Truck size={28} strokeWidth={1.5} aria-hidden="true" />
-            <h2>Доставка и монтаж</h2>
+            <BadgeCheck size={28} strokeWidth={1.5} aria-hidden="true" />
+            <h2>Можно повторить в вашем размере</h2>
             <p>
-              После производства мебель привозят на объект и устанавливают в согласованные сроки.
+              Возьмём этот проект как референс и адаптируем под помещение, цвет, материал и бюджет.
             </p>
           </article>
         </div>
@@ -100,6 +146,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-async function loadProduct(slug: string) {
+async function loadProject(slug: string) {
   return productApi.getBySlug(slug).catch(() => null);
 }

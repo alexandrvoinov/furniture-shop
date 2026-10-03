@@ -1,113 +1,130 @@
-import { apiRequest } from '@/shared/api';
+import { siteContentApi, type SiteMedia, type SiteProject } from '@/entities/site-content';
 
-import type { Product, ProductFilters, ProductPayload } from './types';
+import type { Product, ProductFilters } from './types';
 
-type BackendProduct = {
-  badge?: string | null;
-  category: string;
-  created_at: string;
-  description: string;
-  dimensions: string;
-  id: number;
-  image_position: string;
-  image_url?: string | null;
-  is_available: boolean;
-  materials: string;
-  name: string;
-  old_price?: number | string | null;
-  price: number | string;
-  slug: string;
-  term: string;
-  updated_at: string;
-};
-
-type BackendProductInput = Omit<BackendProduct, 'created_at' | 'id' | 'updated_at'>;
-
-export type ProductWithMeta = Product & {
-  createdAt?: string;
-  updatedAt?: string;
-};
+export type ProductWithMeta = Product;
 
 export const productApi = {
-  async create(payload: ProductPayload) {
-    const product = await apiRequest<BackendProduct>('/products', {
-      body: toBackendProductInput(payload),
-      method: 'POST',
-    });
-
-    return fromBackendProduct(product);
-  },
-
-  async delete(productId: number) {
-    await apiRequest<void>(`/products/${productId}`, {
-      method: 'DELETE',
-    });
-  },
-
   async getBySlug(slug: string) {
-    const product = await apiRequest<BackendProduct>(`/products/${slug}`, {
-      cache: 'no-store',
-    });
+    const products = await loadProducts();
+    const product = products.find((item) => item.slug === slug);
 
-    return fromBackendProduct(product);
+    if (!product) {
+      throw new Error(`Project ${slug} not found`);
+    }
+
+    return product;
   },
 
   async list(filters?: ProductFilters) {
-    const products = await apiRequest<BackendProduct[]>('/products', {
-      cache: 'no-store',
-      query: filters,
-    });
+    const products = await loadProducts();
+    const filteredProducts = filters?.category
+      ? products.filter((product) => product.category === filters.category)
+      : products;
+    const offset = filters?.offset ?? 0;
+    const limit = filters?.limit ?? filteredProducts.length;
 
-    return products.map(fromBackendProduct);
-  },
-
-  async listManage(filters?: Pick<ProductFilters, 'limit' | 'offset'>) {
-    const products = await apiRequest<BackendProduct[]>('/products/manage/all', {
-      cache: 'no-store',
-      query: filters,
-    });
-
-    return products.map(fromBackendProduct);
+    return filteredProducts.slice(offset, offset + limit);
   },
 };
 
-function fromBackendProduct(product: BackendProduct): ProductWithMeta {
+async function loadProducts(): Promise<Product[]> {
+  const content = await siteContentApi.get();
+
+  return content.projects.map(fromSiteProject);
+}
+
+function fromSiteProject(project: SiteProject, index: number): Product {
+  const imageMedia = firstMedia(project.media, 'image');
+  const category = project.furniture_type || guessCategory(project.title, project.description);
+
   return {
-    badge: product.badge ?? undefined,
-    category: product.category,
-    createdAt: product.created_at,
-    description: product.description,
-    dimensions: product.dimensions,
-    id: String(product.id),
-    imagePosition: product.image_position || '50% 50%',
-    imageUrl: product.image_url || '/images/hero-interior.png',
-    isAvailable: product.is_available,
-    materials: product.materials,
-    name: product.name,
-    oldPrice: toNumber(product.old_price),
-    price: toNumber(product.price) ?? 0,
-    slug: product.slug,
-    term: product.term,
-    updatedAt: product.updated_at,
+    category,
+    description: project.description || 'Проект мебели на заказ с фото из портфолио VEEMA.',
+    dimensions: project.dimensions || 'По замеру',
+    id: String(project.id ?? index + 1),
+    imageUrl: imageMedia?.url ?? '/images/logo.jpg',
+    isAvailable: true,
+    materials: project.material || 'По проекту',
+    media: project.media ?? [],
+    name: project.title,
+    price: toNumber(project.approximate_price),
+    slug: slugify(project.title, index),
+    term: project.production_time || 'После согласования',
   };
 }
 
-function toBackendProductInput(product: ProductPayload): BackendProductInput {
-  return {
-    badge: product.badge || null,
-    category: product.category,
-    description: product.description,
-    dimensions: product.dimensions,
-    image_position: product.imagePosition || '50% 50%',
-    image_url: product.imageUrl || null,
-    is_available: product.isAvailable,
-    materials: product.materials,
-    name: product.name,
-    old_price: product.oldPrice ?? null,
-    price: product.price,
-    slug: product.slug,
-    term: product.term,
+function firstMedia(media: SiteMedia[] | undefined, kind: SiteMedia['kind']) {
+  return media?.find((item) => item.kind === kind);
+}
+
+function guessCategory(title: string, description = '') {
+  const text = `${title} ${description}`.toLocaleLowerCase('ru-RU');
+
+  if (text.includes('кух')) {
+    return 'Кухни';
+  }
+
+  if (text.includes('гардероб')) {
+    return 'Гардеробные';
+  }
+
+  if (text.includes('шкаф') || text.includes('хранен')) {
+    return 'Шкафы';
+  }
+
+  return 'Встроенная мебель';
+}
+
+function slugify(value: string, index: number) {
+  const slug = transliterate(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+
+  return slug ? `${slug}-${index + 1}` : `project-${index + 1}`;
+}
+
+function transliterate(value: string) {
+  const letters: Record<string, string> = {
+    а: 'a',
+    б: 'b',
+    в: 'v',
+    г: 'g',
+    д: 'd',
+    е: 'e',
+    ё: 'e',
+    ж: 'zh',
+    з: 'z',
+    и: 'i',
+    й: 'y',
+    к: 'k',
+    л: 'l',
+    м: 'm',
+    н: 'n',
+    о: 'o',
+    п: 'p',
+    р: 'r',
+    с: 's',
+    т: 't',
+    у: 'u',
+    ф: 'f',
+    х: 'h',
+    ц: 'c',
+    ч: 'ch',
+    ш: 'sh',
+    щ: 'sch',
+    ы: 'y',
+    э: 'e',
+    ю: 'yu',
+    я: 'ya',
   };
+
+  return value
+    .toLowerCase()
+    .replace(/[ъь]/g, '')
+    .replace(/[а-яё]/g, (letter) => letters[letter] ?? letter);
 }
 
 function toNumber(value: number | string | null | undefined) {

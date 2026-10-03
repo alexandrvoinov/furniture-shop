@@ -1,8 +1,7 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Clock, Layers, Ruler } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { AddToCartButton } from '@/entities/cart/ui/AddToCartButton';
 import { formatPrice } from '@/shared/lib/formatters';
 import { productRoute } from '@/shared/lib/routes';
 
@@ -20,7 +19,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <Link
         className={styles.imageLink}
         href={productRoute(product.slug)}
-        aria-label={product.name}
+        aria-label={`Открыть проект ${product.name}`}
       >
         <Image
           alt={product.name}
@@ -28,7 +27,6 @@ export function ProductCard({ product }: ProductCardProps) {
           fill
           sizes="(max-width: 720px) 100vw, 33vw"
           src={product.imageUrl}
-          style={{ objectPosition: product.imagePosition }}
         />
         {product.badge ? <span className={styles.badge}>{product.badge}</span> : null}
       </Link>
@@ -36,35 +34,35 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className={styles.body}>
         <div className={styles.meta}>
           <span>{product.category}</span>
-          <span>{product.term}</span>
+          <span>{product.price ? `От ${formatPrice(product.price)}` : 'По запросу'}</span>
         </div>
         <Link className={styles.title} href={productRoute(product.slug)}>
           {product.name}
         </Link>
         <p className={styles.description}>{product.description}</p>
-        <div className={styles.footer}>
+
+        <dl className={styles.specs}>
           <div>
-            <span className={styles.price}>{formatPrice(product.price)}</span>
-            {product.oldPrice ? (
-              <span className={styles.oldPrice}>{formatPrice(product.oldPrice)}</span>
-            ) : null}
+            <Layers size={16} strokeWidth={1.7} aria-hidden="true" />
+            <dt>Материал</dt>
+            <dd>{product.materials || 'По проекту'}</dd>
           </div>
-          <div className={styles.cardActions}>
-            <AddToCartButton
-              className={styles.cartButton}
-              label="В корзину"
-              productId={product.id}
-              productName={product.name}
-            />
-            <Link
-              className={styles.more}
-              href={productRoute(product.slug)}
-              aria-label={`Открыть ${product.name}`}
-            >
-              <ArrowRight size={18} aria-hidden="true" />
-            </Link>
+          <div>
+            <Ruler size={16} strokeWidth={1.7} aria-hidden="true" />
+            <dt>Размеры</dt>
+            <dd>{product.dimensions || 'Индивидуально'}</dd>
           </div>
-        </div>
+          <div>
+            <Clock size={16} strokeWidth={1.7} aria-hidden="true" />
+            <dt>Срок</dt>
+            <dd>{product.term || 'После согласования'}</dd>
+          </div>
+        </dl>
+
+        <Link className={styles.more} href={productRoute(product.slug)}>
+          Подробнее
+          <ArrowRight size={18} aria-hidden="true" />
+        </Link>
       </div>
     </article>
   );

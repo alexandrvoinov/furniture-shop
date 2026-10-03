@@ -1,6 +1,6 @@
-# Mebel Shop Frontend
+# VEEMA ASTANA Frontend
 
-Frontend for a furniture store built with Next.js, React, TypeScript, SCSS, ESLint, Prettier, and Husky.
+Public frontend for a custom furniture workshop built with Next.js, React, TypeScript, SCSS, ESLint, Prettier, and Husky.
 
 ## Requirements
 
@@ -14,14 +14,22 @@ Create `.env.local` for local development:
 
 ```env
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
-AUTH_COOKIE_SECURE=false
+NEXT_PUBLIC_PHONE_DISPLAY=+7 778 652 68 72
+NEXT_PUBLIC_WHATSAPP_URL=https://wa.me/77786526872
+NEXT_PUBLIC_INSTAGRAM_URL=https://www.instagram.com/veema__astana/
+NEXT_PUBLIC_CONTACT_EMAIL=hello@veema.kz
+NEXT_PUBLIC_CONTACT_ADDRESS=Казахстан
 ```
 
-For production, set the real API URL and secure cookies:
+For production:
 
 ```env
 NEXT_PUBLIC_API_URL=https://api.example.kz
-AUTH_COOKIE_SECURE=true
+NEXT_PUBLIC_PHONE_DISPLAY=+7 778 652 68 72
+NEXT_PUBLIC_WHATSAPP_URL=https://wa.me/77786526872
+NEXT_PUBLIC_INSTAGRAM_URL=https://www.instagram.com/veema__astana/
+NEXT_PUBLIC_CONTACT_EMAIL=hello@veema.kz
+NEXT_PUBLIC_CONTACT_ADDRESS=Казахстан
 ```
 
 `NEXT_PUBLIC_API_URL` is required during production builds.
@@ -37,20 +45,11 @@ AUTH_COOKIE_SECURE=true
 - `npm run format` - format files with Prettier
 - `npm run format:check` - check formatting
 
-## Production Checklist
-
-1. Run backend migrations with `python -m app.migrate`.
-2. Create or promote the manager/admin user on the backend.
-3. Set production frontend environment variables.
-4. Run `npm ci`.
-5. Run `npm run build`.
-6. Start with `npm run start` or deploy through your hosting provider.
-
 ## Backend Integration
 
-The frontend talks to the backend through `NEXT_PUBLIC_API_URL`.
-
-- Auth routes proxy login, registration, logout, and current-session checks through the Next app.
-- Product pages, cart, catalog, and manager screens expect real backend data.
+- Public site content comes from backend `/site-content`.
+- Project photos are read from `projects[].media` and displayed as portfolio cards/details.
+- Hero and process videos are read from `production[].media` and loaded from `/media/...`.
+- Client contact CTAs open WhatsApp directly; the frontend does not store requests or run an onsite estimate form.
 - Money values are displayed as Kazakhstan tenge (`KZT`).
-- Backend code is stored in a separate folder and should be changed only in the backend project.
+- This frontend contains only the public lead-generation website and backend API integration.

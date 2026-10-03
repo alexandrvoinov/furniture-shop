@@ -1,106 +1,162 @@
 import {
   ArrowRight,
-  Armchair,
   BadgeCheck,
-  Drill,
+  Camera,
   Factory,
-  Hammer,
-  PackageCheck,
-  PanelsTopLeft,
+  MessageCircle,
   Ruler,
-  Sofa,
+  Sparkles,
   Truck,
-  type LucideIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { ProductCard, productCategories, type Product } from '@/entities/product';
 import { productApi } from '@/entities/product/api';
+import {
+  findFirstImage,
+  findHeroVideo,
+  siteContentApi,
+  type SiteContent,
+} from '@/entities/site-content';
+import { createWhatsappLink } from '@/shared/config/contacts';
 import { routes } from '@/shared/lib/routes';
+import { MediaCarousel } from '@/widgets/media-carousel';
 
 import styles from './HomePage.module.scss';
 
-const categoryIcons: Record<string, LucideIcon> = {
-  kitchens: PanelsTopLeft,
-  storage: Armchair,
-  wardrobes: Sofa,
-};
-
-const processSteps = [
+const benefits = [
   {
-    description: 'Приезжаем на объект, фиксируем размеры, коммуникации и особенности помещения.',
+    description: 'Проектируем кухни, шкафы и гардеробные под реальные размеры помещения.',
     icon: Ruler,
-    title: 'Замер',
+    title: 'Точно под пространство',
   },
   {
-    description: 'Собираем проект под сценарии жизни, материалы, бюджет и сроки изготовления.',
-    icon: PanelsTopLeft,
-    title: 'Проект',
+    description: 'В WhatsApp быстро обсуждаем задачу, материалы, сроки и примерный бюджет.',
+    icon: Sparkles,
+    title: 'Простой старт',
   },
   {
-    description: 'Делаем корпуса, фасады и детали в собственном цехе с контролем геометрии.',
+    description: 'Собственный цех помогает контролировать качество, геометрию и сроки.',
     icon: Factory,
-    title: 'Изготовление',
+    title: 'Свое производство',
   },
   {
-    description: 'Доставляем мебель, аккуратно собираем на месте и сдаем готовый интерьер.',
+    description: 'Доставляем, собираем и сдаём готовую мебель без лишней суеты для клиента.',
     icon: Truck,
-    title: 'Монтаж',
+    title: 'Монтаж под ключ',
   },
 ];
 
-const workshopFacts = [
-  'Свой цех и понятный контроль сроков',
-  'Материалы подбираются под проект и нагрузку',
-  'Кухни, шкафы и гардеробные делаются по размерам помещения',
-];
+const processShort = ['Замер', 'Эскиз', 'Договор', 'Техпроект', 'Распил', 'Монтаж'];
 
 export default async function HomePage() {
-  const featuredProducts = await loadFeaturedProducts();
+  const siteContent = await loadSiteContent();
+  const featuredProjects = await loadFeaturedProjects();
+  const heroVideo = siteContent ? findHeroVideo(siteContent) : undefined;
+  const heroImageUrl = siteContent
+    ? findFirstImage(siteContent)
+    : (featuredProjects[0]?.imageUrl ?? '/images/logo.jpg');
+  const heroPoster = heroVideo?.poster ?? heroImageUrl;
+  const workshopImages = getCarouselImages(siteContent, featuredProjects, heroImageUrl);
 
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
-        <Image
-          alt="Светлый интерьер с кухней и встроенным шкафом"
-          className={styles.heroImage}
-          fill
-          priority
-          sizes="100vw"
-          src="/images/hero-interior.png"
-        />
+        {heroVideo ? (
+          <video
+            aria-hidden="true"
+            autoPlay
+            className={styles.heroVideo}
+            loop
+            muted
+            playsInline
+            poster={heroPoster}
+          >
+            <source src={heroVideo.url} type="video/mp4" />
+          </video>
+        ) : (
+          <Image
+            alt="Готовая кухня и встроенная мебель в современном интерьере"
+            className={styles.heroImage}
+            fill
+            priority
+            sizes="100vw"
+            src={heroImageUrl}
+          />
+        )}
         <div className={styles.heroOverlay} />
         <div className={`container ${styles.heroInner}`}>
           <div className={styles.heroContent}>
-            <p className={styles.eyebrow}>Мебель на заказ</p>
-            <h1>Кухни, шкафы и гардеробные под ваш интерьер</h1>
+            <p className={styles.eyebrow}>Мебель на заказ в Казахстане</p>
+            <h1>Кухни, шкафы и гардеробные, которые выглядят как часть интерьера</h1>
             <p className={styles.heroLead}>
-              Проектируем, производим, доставляем и монтируем мебель по индивидуальным размерам.
+              Делаем мебель по индивидуальным размерам: от первой идеи и замера до производства,
+              доставки и аккуратного монтажа.
             </p>
             <div className={styles.heroActions}>
-              <Link className={styles.primaryButton} href={routes.catalog}>
-                Смотреть каталог
+              <a
+                className={styles.primaryButton}
+                href={createWhatsappLink(
+                  'Здравствуйте! Хочу обсудить мебель на заказ. Могу отправить фото и размеры.',
+                )}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Обсудить проект
                 <ArrowRight size={18} aria-hidden="true" />
-              </Link>
-              <a className={styles.secondaryButton} href="#process">
-                Как работаем
+              </a>
+              <a
+                className={styles.secondaryButton}
+                href={createWhatsappLink('Здравствуйте! Хочу отправить фото помещения для мебели.')}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <MessageCircle size={18} aria-hidden="true" />
+                Отправить фото
               </a>
             </div>
             <dl className={styles.heroStats}>
               <div>
-                <dt>4 этапа</dt>
-                <dd>от замера до монтажа</dd>
+                <dt>6 этапов</dt>
+                <dd>От замера до установки</dd>
               </div>
               <div>
-                <dt>свой цех</dt>
-                <dd>без лишних посредников</dd>
+                <dt>Свой цех</dt>
+                <dd>Производство без посредников</dd>
               </div>
               <div>
-                <dt>1 проект</dt>
-                <dd>под размеры дома</dd>
+                <dt>На заказ</dt>
+                <dd>Размеры, цвет и наполнение под вас</dd>
               </div>
             </dl>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.benefits}>
+        <div className="container">
+          <div className={styles.sectionHeader}>
+            <p className={styles.eyebrow}>Что делаем</p>
+            <h2>Помогаем превратить неудобные углы, ниши и стены в продуманное хранение</h2>
+            <p>
+              Мы не продаём готовые коробки. Каждый проект собирается вокруг помещения, привычек
+              семьи, техники, цвета стен и бюджета.
+            </p>
+          </div>
+
+          <div className={styles.benefitGrid}>
+            {benefits.map((benefit) => {
+              const Icon = benefit.icon;
+
+              return (
+                <article className={styles.benefitCard} key={benefit.title}>
+                  <Icon size={28} strokeWidth={1.6} aria-hidden="true" />
+                  <h3>{benefit.title}</h3>
+                  <p>{benefit.description}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -109,118 +165,122 @@ export default async function HomePage() {
         <div className="container">
           <div className={styles.sectionHeader}>
             <p className={styles.eyebrow}>Направления</p>
-            <h2>Главный фокус - встроенная мебель и точное хранение</h2>
-            <p>
-              Подбираем фасады, фурнитуру, наполнение и материалы под комнату, а не под готовый
-              стандартный размер.
-            </p>
+            <h2>Кухни, шкафы, гардеробные и встроенные решения</h2>
           </div>
 
           <div className={styles.categoryGrid}>
-            {productCategories.map((category) => {
-              const Icon = categoryIcons[category.id] ?? Armchair;
-
-              return (
-                <Link className={styles.categoryCard} href={category.href} key={category.id}>
-                  <span className={styles.iconBubble}>
-                    <Icon size={28} strokeWidth={1.6} aria-hidden="true" />
-                  </span>
-                  <span className={styles.categoryImage}>
-                    <Image
-                      alt={category.title}
-                      fill
-                      sizes="(max-width: 760px) 100vw, 33vw"
-                      src="/images/hero-interior.png"
-                      style={{ objectPosition: category.imagePosition }}
-                    />
-                  </span>
-                  <span className={styles.categoryTitle}>{category.title}</span>
-                  <span className={styles.categoryDescription}>{category.description}</span>
-                </Link>
-              );
-            })}
+            {productCategories.map((category) => (
+              <Link className={styles.categoryCard} href={category.href} key={category.id}>
+                <span className={styles.categoryImage}>
+                  <Image
+                    alt={category.title}
+                    fill
+                    sizes="(max-width: 760px) 100vw, 33vw"
+                    src={getCategoryImage(featuredProjects, category.title, heroImageUrl)}
+                  />
+                </span>
+                <span className={styles.categoryTitle}>{category.title}</span>
+                <span className={styles.categoryDescription}>{category.description}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       <section className={styles.featured}>
         <div className="container">
-          <div className={styles.sectionHeader}>
-            <p className={styles.eyebrow}>Подборка</p>
-            <h2>Популярные решения для квартиры и дома</h2>
-            <p>Спокойные формы, точная посадка по стенам и материалы, которые выдерживают быт.</p>
+          <div className={styles.featuredHeader}>
+            <div className={styles.sectionHeader}>
+              <p className={styles.eyebrow}>Наши работы</p>
+              <h2>Реальные проекты вместо абстрактного каталога</h2>
+              <p>
+                В карточках показываем фото, тип мебели, материал, размеры, срок изготовления и
+                примерную стоимость похожих работ.
+              </p>
+            </div>
+            <Link className={styles.textButton} href={routes.works}>
+              Все работы
+              <ArrowRight size={18} aria-hidden="true" />
+            </Link>
           </div>
-          {featuredProducts.length > 0 ? (
+
+          {featuredProjects.length > 0 ? (
             <div className={styles.productGrid}>
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {featuredProjects.map((project) => (
+                <ProductCard key={project.id} product={project} />
               ))}
             </div>
           ) : (
             <div className={styles.emptyBlock}>
-              <h3>Каталог скоро появится</h3>
-              <p>Товары будут отображаться здесь после добавления в панели менеджера.</p>
-              <Link href={routes.catalog}>Открыть каталог</Link>
+              <Camera size={26} strokeWidth={1.6} aria-hidden="true" />
+              <h3>Работы появятся после добавления проектов в backend</h3>
+              <p>
+                Сейчас страница уже готова к данным backend: проекты подтянутся автоматически вместе
+                с фото, материалами, размерами и стоимостью.
+              </p>
             </div>
           )}
         </div>
       </section>
 
-      <section className={styles.process} id="process">
-        <div className="container">
-          <div className={styles.processHeader}>
-            <p className={styles.eyebrow}>Процесс</p>
-            <h2>Замер → изготовление → доставка → монтаж</h2>
+      <section className={styles.processPreview}>
+        <div className={`container ${styles.processPreviewInner}`}>
+          <div>
+            <p className={styles.eyebrow}>Как мы работаем</p>
+            <h2>Замер → эскиз → договор → техпроект → распил → монтаж</h2>
           </div>
-          <div className={styles.steps}>
-            {processSteps.map((step, index) => {
-              const Icon = step.icon;
-
-              return (
-                <article className={styles.step} key={step.title}>
-                  <span className={styles.stepNumber}>{String(index + 1).padStart(2, '0')}</span>
-                  <Icon size={30} strokeWidth={1.5} aria-hidden="true" />
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
-                </article>
-              );
-            })}
+          <div className={styles.processLine}>
+            {processShort.map((step, index) => (
+              <span key={step}>
+                <strong>{index + 1}</strong>
+                {step}
+              </span>
+            ))}
           </div>
+          <Link className={styles.lightButton} href={routes.process}>
+            Посмотреть процесс
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         </div>
       </section>
 
       <section className={styles.workshop}>
         <div className={`container ${styles.workshopInner}`}>
           <div className={styles.workshopImageWrap}>
-            <Image
-              alt="Цех с мебельными деталями и материалами"
-              className={styles.workshopImage}
-              fill
-              sizes="(max-width: 900px) 100vw, 48vw"
-              src="/images/workshop.png"
-            />
+            <MediaCarousel alt="Готовые проекты мебели VEEMA ASTANA" images={workshopImages} />
           </div>
 
           <div className={styles.workshopContent}>
-            <p className={styles.eyebrow}>Собственное производство</p>
-            <h2>Цех, материалы и монтажная команда в одной цепочке</h2>
+            <p className={styles.eyebrow}>Производство</p>
+            <h2>Материалы, распил, сборка и монтаж в одной цепочке</h2>
             <p>
-              Один маршрут проекта помогает держать качество на каждом этапе: от первого замера до
-              аккуратной установки у клиента.
+              Мы показываем производство и готовые интерьеры, чтобы клиент понимал, кто делает его
+              мебель и как она будет выглядеть после установки.
             </p>
             <ul className={styles.factList}>
-              {workshopFacts.map((fact) => (
-                <li key={fact}>
-                  <BadgeCheck size={20} strokeWidth={1.7} aria-hidden="true" />
-                  {fact}
-                </li>
-              ))}
+              <li>
+                <BadgeCheck size={20} strokeWidth={1.7} aria-hidden="true" />
+                Подбираем материалы под нагрузку, стиль и бюджет
+              </li>
+              <li>
+                <BadgeCheck size={20} strokeWidth={1.7} aria-hidden="true" />
+                Согласуем цвет, фурнитуру и внутреннее наполнение
+              </li>
+              <li>
+                <BadgeCheck size={20} strokeWidth={1.7} aria-hidden="true" />
+                После обсуждения выезжаем на замер и готовим понятный следующий шаг
+              </li>
             </ul>
-            <div className={styles.toolLine} aria-hidden="true">
-              <Hammer size={26} strokeWidth={1.4} />
-              <Drill size={26} strokeWidth={1.4} />
-              <PackageCheck size={26} strokeWidth={1.4} />
-            </div>
+            <a
+              className={styles.primaryButton}
+              href={createWhatsappLink(
+                'Здравствуйте! Хочу обсудить мебель на заказ и договориться о замере.',
+              )}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Обсудить проект в WhatsApp
+            </a>
           </div>
         </div>
       </section>
@@ -228,8 +288,29 @@ export default async function HomePage() {
   );
 }
 
-async function loadFeaturedProducts(): Promise<Product[]> {
-  const apiProducts = await productApi.list({ limit: 3, offset: 0 }).catch(() => []);
+async function loadFeaturedProjects(): Promise<Product[]> {
+  const projects = await productApi.list({ limit: 3, offset: 0 }).catch(() => []);
 
-  return apiProducts.slice(0, 3);
+  return projects.slice(0, 3);
+}
+
+async function loadSiteContent(): Promise<SiteContent | null> {
+  return siteContentApi.get().catch(() => null);
+}
+
+function getCategoryImage(projects: Product[], category: string, fallback: string) {
+  return projects.find((project) => project.category === category)?.imageUrl ?? fallback;
+}
+
+function getCarouselImages(content: SiteContent | null, projects: Product[], fallback: string) {
+  const contentImages =
+    content?.projects
+      .flatMap((project) => project.media ?? [])
+      .filter((media) => media.kind === 'image')
+      .map((media) => media.url) ?? [];
+
+  const projectImages = projects.map((project) => project.imageUrl);
+  const images = [...contentImages, ...projectImages, fallback];
+
+  return [...new Set(images)].filter(Boolean).slice(0, 8);
 }
