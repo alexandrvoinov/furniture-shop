@@ -11,7 +11,13 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ProductCard, productCategories, type Product } from '@/entities/product';
+import {
+  getCategoryProject,
+  getVisibleProductCategories,
+  ProductCard,
+  type Product,
+  type ProductCategory,
+} from '@/entities/product';
 import { productApi } from '@/entities/product/api';
 import {
   findFirstImage,
@@ -27,7 +33,7 @@ import styles from './HomePage.module.scss';
 
 const benefits = [
   {
-    description: 'Проектируем кухни, шкафы и гардеробные под реальные размеры помещения.',
+    description: 'Проектируем кухни, шкафы и ТВ-зоны под реальные размеры помещения.',
     icon: Ruler,
     title: 'Точно под пространство',
   },
@@ -52,13 +58,15 @@ const processShort = ['Замер', 'Эскиз', 'Договор', 'Техпр�
 
 export default async function HomePage() {
   const siteContent = await loadSiteContent();
-  const featuredProjects = await loadFeaturedProjects();
+  const projects = await loadProjects();
+  const featuredProjects = projects.slice(0, 3);
+  const visibleCategories = getVisibleProductCategories(projects);
   const heroVideo = siteContent ? findHeroVideo(siteContent) : undefined;
   const heroImageUrl = siteContent
     ? findFirstImage(siteContent)
-    : (featuredProjects[0]?.imageUrl ?? '/images/logo.jpg');
+    : (projects[0]?.imageUrl ?? '/images/logo.jpg');
   const heroPoster = heroVideo?.poster ?? heroImageUrl;
-  const workshopImages = getCarouselImages(siteContent, featuredProjects, heroImageUrl);
+  const workshopImages = getCarouselImages(siteContent, projects, heroImageUrl);
 
   return (
     <main className={styles.page}>
@@ -89,7 +97,7 @@ export default async function HomePage() {
         <div className={`container ${styles.heroInner}`}>
           <div className={styles.heroContent}>
             <p className={styles.eyebrow}>Мебель на заказ в Казахстане</p>
-            <h1>Кухни, шкафы и гардеробные, которые выглядят как часть интерьера</h1>
+            <h1>Кухни, шкафы и ТВ-зоны, которые выглядят как часть интерьера</h1>
             <p className={styles.heroLead}>
               Делаем мебель по индивидуальным размерам: от первой идеи и замера до производства,
               доставки и аккуратного монтажа.
@@ -165,18 +173,18 @@ export default async function HomePage() {
         <div className="container">
           <div className={styles.sectionHeader}>
             <p className={styles.eyebrow}>Направления</p>
-            <h2>Кухни, шкафы, гардеробные и встроенные решения</h2>
+            <h2>Кухни, шкафы, ТВ-зоны и встроенные решения</h2>
           </div>
 
           <div className={styles.categoryGrid}>
-            {productCategories.map((category) => (
+            {visibleCategories.map((category) => (
               <Link className={styles.categoryCard} href={category.href} key={category.id}>
                 <span className={styles.categoryImage}>
                   <Image
                     alt={category.title}
                     fill
                     sizes="(max-width: 760px) 100vw, 33vw"
-                    src={getCategoryImage(featuredProjects, category.title, heroImageUrl)}
+                    src={getCategoryImage(projects, category, heroImageUrl)}
                   />
                 </span>
                 <span className={styles.categoryTitle}>{category.title}</span>
@@ -288,18 +296,16 @@ export default async function HomePage() {
   );
 }
 
-async function loadFeaturedProjects(): Promise<Product[]> {
-  const projects = await productApi.list({ limit: 3, offset: 0 }).catch(() => []);
-
-  return projects.slice(0, 3);
+async function loadProjects(): Promise<Product[]> {
+  return productApi.list({ limit: 100, offset: 0 }).catch(() => []);
 }
 
 async function loadSiteContent(): Promise<SiteContent | null> {
   return siteContentApi.get().catch(() => null);
 }
 
-function getCategoryImage(projects: Product[], category: string, fallback: string) {
-  return projects.find((project) => project.category === category)?.imageUrl ?? fallback;
+function getCategoryImage(projects: Product[], category: ProductCategory, fallback: string) {
+  return getCategoryProject(projects, category)?.imageUrl ?? fallback;
 }
 
 function getCarouselImages(content: SiteContent | null, projects: Product[], fallback: string) {

@@ -248,7 +248,7 @@
 .detailsGrid {
   display: grid;
   gap: 22px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .detailCard {
@@ -266,6 +266,7 @@
 }
 
 .detailCard ol {
+  counter-reset: detail-step;
   display: grid;
   gap: 10px;
   margin: 22px 0 0;
@@ -275,19 +276,26 @@
 
 .detailCard li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   color: var(--color-muted);
-  font-weight: 800;
+  font-weight: 750;
+  line-height: 1.5;
 }
 
 .detailCard li::before {
-  width: 8px;
-  height: 8px;
+  display: grid;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
   border-radius: 50%;
   background: var(--color-brand);
-  content: '';
+  color: #ffffff;
+  content: counter(detail-step);
+  counter-increment: detail-step;
+  font-size: 12px;
+  font-weight: 900;
+  place-items: center;
 }
 
 .cta {

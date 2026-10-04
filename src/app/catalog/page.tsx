@@ -1,7 +1,12 @@
 import { Camera, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
-import { ProductCard, productCategories, type Product } from '@/entities/product';
+import {
+  getVisibleProductCategories,
+  ProductCard,
+  productCategories,
+  type Product,
+} from '@/entities/product';
 import { productApi } from '@/entities/product/api';
 import { createWhatsappLink } from '@/shared/config/contacts';
 import { routes } from '@/shared/lib/routes';
@@ -26,6 +31,8 @@ export default async function WorksPage({ searchParams }: WorksPageProps) {
   const params = await searchParams;
   const selectedCategoryId = getSearchParamValue(params?.category);
   const selectedCategory = productCategories.find((category) => category.id === selectedCategoryId);
+  const allProjects = await loadProjects();
+  const visibleCategories = getVisibleProductCategories(allProjects);
   const projects = await loadProjects(selectedCategory?.title);
 
   return (
@@ -35,8 +42,8 @@ export default async function WorksPage({ searchParams }: WorksPageProps) {
           <p className={styles.eyebrow}>Наши работы</p>
           <h1>Готовые проекты мебели на заказ с материалами, размерами и сроками</h1>
           <p>
-            Здесь не магазин готовых товаров, а портфолио выполненных решений: кухни, шкафы,
-            гардеробные и встроенное хранение под конкретные помещения.
+            Здесь не магазин готовых товаров, а портфолио выполненных решений: кухни, шкафы, ТВ-зоны
+            и встроенное хранение под конкретные помещения.
           </p>
           <div className={styles.heroActions}>
             <a
@@ -72,7 +79,7 @@ export default async function WorksPage({ searchParams }: WorksPageProps) {
             >
               Все работы
             </Link>
-            {productCategories.map((category) => (
+            {visibleCategories.map((category) => (
               <Link
                 aria-current={selectedCategory?.id === category.id ? 'page' : undefined}
                 className={getFilterClassName(selectedCategory?.id === category.id)}

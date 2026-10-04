@@ -10,7 +10,7 @@ import './globals.scss';
 export const metadata: Metadata = {
   title: 'VEEMA ASTANA | Мебель на заказ',
   description:
-    'VEEMA ASTANA: кухни, шкафы и гардеробные на заказ. Выполненные проекты, замер, производство и монтаж.',
+    'VEEMA ASTANA: кухни, шкафы и ТВ-зоны на заказ. Выполненные проекты, замер, производство и монтаж.',
   icons: {
     icon: '/images/logo.jpg',
   },

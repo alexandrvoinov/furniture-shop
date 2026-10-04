@@ -36,7 +36,8 @@ async function loadProducts(): Promise<Product[]> {
 
 function fromSiteProject(project: SiteProject, index: number): Product {
   const imageMedia = firstMedia(project.media, 'image');
-  const category = project.furniture_type || guessCategory(project.title, project.description);
+  const category =
+    normalizeCategory(project.furniture_type) ?? guessCategory(project.title, project.description);
 
   return {
     category,
@@ -65,6 +66,10 @@ function guessCategory(title: string, description = '') {
     return 'Кухни';
   }
 
+  if (isTvZoneText(text)) {
+    return 'ТВ-зоны';
+  }
+
   if (text.includes('гардероб')) {
     return 'Гардеробные';
   }
@@ -74,6 +79,36 @@ function guessCategory(title: string, description = '') {
   }
 
   return 'Встроенная мебель';
+}
+
+function normalizeCategory(value?: null | string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const text = value.toLocaleLowerCase('ru-RU');
+
+  if (text.includes('кух')) {
+    return 'Кухни';
+  }
+
+  if (isTvZoneText(text)) {
+    return 'ТВ-зоны';
+  }
+
+  if (text.includes('шкаф') || text.includes('хранен')) {
+    return 'Шкафы';
+  }
+
+  if (text.includes('гардероб')) {
+    return 'Гардеробные';
+  }
+
+  return value;
+}
+
+function isTvZoneText(value: string) {
+  return value.includes('тв') || value.includes('tv') || value.includes('телевиз');
 }
 
 function slugify(value: string, index: number) {

@@ -23,7 +23,7 @@ export function Footer() {
             </span>
             VEEMA ASTANA
           </span>
-          <span>Кухни, шкафы и гардеробные по индивидуальным размерам.</span>
+          <span>Кухни, шкафы и ТВ-зоны по индивидуальным размерам.</span>
         </div>
 
         <nav className={styles.links} aria-label="Навигация в подвале">
